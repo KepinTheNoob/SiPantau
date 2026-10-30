@@ -1,0 +1,42 @@
+{
+  "name": "transparansi-proyek-pemerintah",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "oxlint",
+    "format": "prettier --write .",
+    "check": "oxlint --fix && prettier --write . && oxlint && tsc --noEmit && vitest run",
+    "check:ci": "oxlint --fix && prettier --write . && oxlint && tsc --noEmit && vitest run",
+    "db:types": "supabase gen types typescript --local > src/db/types.ts",
+    "db:seed": "node --experimental-strip-types scripts/seed.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.118.0",
+    "leaflet": "^1.9.4",
+    "next": "16.4.3",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@oxlint/plugins": "1.90.0",
+    "@tailwindcss/turbopack": "^4",
+    "@types/leaflet": "^1.9.22",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "oxlint": "1.90.0",
+    "prettier": "^3.9.10",
+    "supabase": "^2.122.0",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vitest": "^5.0.5"
+  },
+  "packageManager": "pnpm@11.13.0"
+}
