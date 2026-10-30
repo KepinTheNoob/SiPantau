@@ -333,7 +333,7 @@ export function ProjectEditForm({ project }: { readonly project: ProjectRow }) {
             <button
               type="submit"
               disabled={isPending}
-              className="rounded bg-slate-900 px-5 py-2 text-sm font-medium text-white shadow-sm hover:bg-slate-800 disabled:opacity-50"
+              className="rounded-lg bg-brand-blue px-5 py-2 text-sm font-semibold text-white shadow-xs transition hover:bg-brand-blue-hover focus:outline-none focus:ring-2 focus:ring-brand-blue focus:ring-offset-2 disabled:opacity-50"
             >
               {isPending ? "Menyimpan..." : "Simpan Perubahan"}
             </button>

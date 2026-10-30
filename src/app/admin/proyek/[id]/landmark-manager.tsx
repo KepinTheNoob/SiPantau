@@ -104,7 +104,7 @@ export function LandmarkManager({
         <button
           type="button"
           onClick={() => setShowAddForm((prev) => !prev)}
-          className="rounded bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-800"
+          className="rounded-lg bg-brand-blue px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition hover:bg-brand-blue-hover focus:outline-none focus:ring-2 focus:ring-brand-blue"
         >
           {showAddForm ? "Tutup Form" : "+ Tambah Tahapan"}
         </button>
@@ -184,7 +184,7 @@ export function LandmarkManager({
             <button
               type="submit"
               disabled={isPending}
-              className="rounded bg-slate-900 px-4 py-1 text-xs font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+              className="rounded-lg bg-brand-blue px-4 py-1.5 text-xs font-semibold text-white shadow-xs transition hover:bg-brand-blue-hover disabled:opacity-50"
             >
               {isPending ? "Menyimpan..." : "Simpan Tahapan"}
             </button>
@@ -193,11 +193,11 @@ export function LandmarkManager({
       )}
 
       {landmarks.length === 0 ? (
-        <div className="rounded border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">
+        <div className="rounded-xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">
           Belum ada tahapan yang ditambahkan ke proyek ini.
         </div>
       ) : (
-        <div className="divide-y divide-slate-200 rounded-lg border border-slate-200 bg-white shadow-sm">
+        <div className="divide-y divide-slate-200 rounded-xl border border-slate-200 bg-white shadow-xs">
           {landmarks.map((lm, index) => {
             const isDone = lm.done_at !== null || lm.done;
             const isCompletingThis = completingLandmarkId === lm.id;
@@ -208,17 +208,25 @@ export function LandmarkManager({
                 className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="flex items-start gap-3">
-                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-700">
-                    {index + 1}
+                  <span
+                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                      isDone
+                        ? "bg-brand-green text-white shadow-xs"
+                        : "bg-slate-100 text-slate-700"
+                    }`}
+                  >
+                    {isDone ? "✓" : index + 1}
                   </span>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h4 className="font-medium text-slate-900">{lm.name}</h4>
+                      <h4 className="font-semibold text-slate-900">
+                        {lm.name}
+                      </h4>
                       <span className="rounded bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700">
                         Bobot {lm.weight}%
                       </span>
                       {isDone && (
-                        <span className="rounded bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">
+                        <span className="rounded bg-brand-green-light px-2 py-0.5 text-xs font-semibold text-brand-green border border-brand-green/20">
                           Selesai
                         </span>
                       )}
@@ -238,7 +246,7 @@ export function LandmarkManager({
                       type="button"
                       disabled={isPending}
                       onClick={() => handleToggleDone(lm.id, true)}
-                      className="rounded border border-slate-300 px-2.5 py-1 text-xs text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+                      className="rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50"
                     >
                       Batalkan Selesai
                     </button>
@@ -267,7 +275,7 @@ export function LandmarkManager({
                       <button
                         type="submit"
                         disabled={isPending}
-                        className="rounded bg-emerald-700 px-2.5 py-1 text-xs font-medium text-white hover:bg-emerald-600 disabled:opacity-50"
+                        className="rounded-lg bg-brand-green px-3 py-1 text-xs font-semibold text-white shadow-xs transition hover:bg-brand-green-hover disabled:opacity-50"
                       >
                         Unggah & Selesai
                       </button>
@@ -283,7 +291,7 @@ export function LandmarkManager({
                     <button
                       type="button"
                       onClick={() => setCompletingLandmarkId(lm.id)}
-                      className="rounded bg-emerald-700 px-2.5 py-1 text-xs font-medium text-white hover:bg-emerald-600"
+                      className="rounded-lg bg-brand-green px-3 py-1 text-xs font-semibold text-white shadow-xs transition hover:bg-brand-green-hover focus:outline-none focus:ring-2 focus:ring-brand-green"
                     >
                       Tandai Selesai
                     </button>

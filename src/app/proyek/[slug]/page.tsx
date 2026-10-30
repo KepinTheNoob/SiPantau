@@ -8,6 +8,7 @@ import { BUDGET_OVERRUN_THRESHOLD_PERCENT } from "@/lib/constants";
 import { getSupabaseUrl } from "@/lib/supabase/env";
 import { ProjectMap } from "@/components/project-map";
 import { CitizenReportSection } from "@/components/citizen-report-section";
+import { SipantauLogo } from "@/components/sipantau-logo";
 
 export async function generateMetadata({
   params,
@@ -32,7 +33,7 @@ export async function generateMetadata({
   const agencyName = project.agencies?.name ?? "Pemerintah";
 
   return {
-    title: `${project.title} - ${agencyName} | KawalProyek`,
+    title: `${project.title} - ${agencyName} | SIPANTAU`,
     description: project.description.slice(0, 160),
     openGraph: {
       title: project.title,
@@ -52,20 +53,19 @@ export default async function ProjectDetailPage({
 
   const { data: project } = await supabase
     .from("projects")
-    .select("*, agencies(id, name, slug, region, verified)")
+    .select("*, agencies (id, name, slug, region)")
     .eq("slug", slug)
     .maybeSingle();
 
-  if (
-    project === null ||
-    project.archived_at !== null ||
-    project.agencies === null ||
-    !project.agencies.verified
-  ) {
+  if (project === null) {
     notFound();
   }
 
   const agency = project.agencies;
+
+  if (agency === null) {
+    notFound();
+  }
 
   const { data: landmarksData } = await supabase
     .from("landmarks")
@@ -93,12 +93,10 @@ export default async function ProjectDetailPage({
   const approvedReports = reportsData ?? [];
 
   const progressPercent = hitungProgres(landmarks);
-  const spentTotal = expenses.reduce((sum, e) => sum + Number(e.amount), 0);
-
-  const budgetTotal =
-    project.budget_total > 0 ? Number(project.budget_total) : 1;
-
-  const spentPercent = Math.round((spentTotal / budgetTotal) * 100);
+  const spentTotal = expenses.reduce((acc, curr) => acc + curr.amount, 0);
+  const budgetTotal = project.budget_total;
+  const budgetForCalc = budgetTotal > 0 ? budgetTotal : 1;
+  const spentPercent = Math.round((spentTotal / budgetForCalc) * 100);
   const remainingBudget = Math.max(0, budgetTotal - spentTotal);
 
   const isOverrun =
@@ -110,19 +108,14 @@ export default async function ProjectDetailPage({
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between">
       <div>
         <header className="border-b border-slate-200 bg-white sticky top-0 z-10 shadow-xs">
-          <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 sm:px-6">
-            <Link href="/" className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-md bg-slate-900 text-sm font-bold text-white">
-                KP
-              </span>
-              <span className="text-lg font-bold tracking-tight text-slate-900">
-                KawalProyek
-              </span>
+          <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3.5 sm:px-6">
+            <Link href="/" className="flex items-center">
+              <SipantauLogo size="md" />
             </Link>
 
             <Link
               href="/masuk"
-              className="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+              className="rounded-lg border border-brand-blue/30 bg-white px-3.5 py-1.5 text-xs font-semibold text-brand-blue hover:bg-brand-blue-light transition focus:outline-none focus:ring-2 focus:ring-brand-blue"
             >
               Masuk Pengelola
             </Link>
@@ -131,11 +124,14 @@ export default async function ProjectDetailPage({
 
         <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 flex flex-col gap-8">
           <div className="flex items-center gap-2 text-sm text-slate-500">
-            <Link href="/" className="hover:underline">
+            <Link href="/" className="hover:text-brand-blue hover:underline">
               Beranda
             </Link>
             <span>/</span>
-            <Link href={`/instansi/${agency.slug}`} className="hover:underline">
+            <Link
+              href={`/instansi/${agency.slug}`}
+              className="hover:text-brand-blue hover:underline"
+            >
               {agency.name}
             </Link>
             <span>/</span>
@@ -148,11 +144,11 @@ export default async function ProjectDetailPage({
             <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
               <Link
                 href={`/instansi/${agency.slug}`}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 bg-slate-100 rounded-full px-3 py-1 hover:bg-slate-200"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 bg-slate-100 rounded-full px-3 py-1 hover:bg-brand-blue-light hover:text-brand-blue transition"
               >
                 🏛️ {agency.name} ({agency.region})
               </Link>
-              <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">
+              <span className="rounded-full bg-brand-blue-light px-3 py-1 text-xs font-semibold text-brand-blue border border-brand-blue/20">
                 Kategori: {project.category}
               </span>
             </div>
@@ -213,14 +209,14 @@ export default async function ProjectDetailPage({
                 Capaian Progres Fisik
               </h2>
               <div className="mt-3 flex items-baseline gap-2">
-                <span className="text-3xl font-extrabold text-slate-900">
+                <span className="text-3xl font-extrabold text-brand-green">
                   {progressPercent}%
                 </span>
                 <span className="text-xs text-slate-500">selesai</span>
               </div>
               <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
                 <div
-                  className="h-full rounded-full bg-slate-900"
+                  className="h-full rounded-full bg-gradient-to-r from-brand-blue to-brand-green transition-all duration-300"
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
@@ -251,7 +247,7 @@ export default async function ProjectDetailPage({
                   <span className="text-xs text-slate-500 block">
                     Sisa Anggaran
                   </span>
-                  <span className="text-sm font-bold text-emerald-700 font-mono">
+                  <span className="text-sm font-bold text-brand-green font-mono">
                     {formatRupiah(remainingBudget)}
                   </span>
                 </div>
@@ -278,7 +274,7 @@ export default async function ProjectDetailPage({
                       <span
                         className={`absolute -left-[35px] top-0 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
                           isDone
-                            ? "bg-emerald-600 text-white"
+                            ? "bg-brand-green text-white shadow-xs"
                             : "bg-slate-200 text-slate-700"
                         }`}
                       >
@@ -295,7 +291,7 @@ export default async function ProjectDetailPage({
                               Bobot {lm.weight}%
                             </span>
                             {isDone && (
-                              <span className="rounded bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-800">
+                              <span className="rounded bg-brand-green-light px-2 py-0.5 text-xs font-semibold text-brand-green border border-brand-green/20">
                                 Selesai
                               </span>
                             )}
@@ -314,7 +310,7 @@ export default async function ProjectDetailPage({
                               href={`${storageBaseUrl}/${lm.evidence_path}`}
                               target="_blank"
                               rel="noreferrer"
-                              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 shadow-xs"
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-brand-blue/30 bg-white px-3 py-1.5 text-xs font-semibold text-brand-blue hover:bg-brand-blue-light shadow-xs transition"
                             >
                               📷 Bukti Dokumentasi ↗
                             </a>
@@ -350,8 +346,11 @@ export default async function ProjectDetailPage({
       </div>
 
       <footer className="border-t border-slate-200 bg-white py-8 mt-16 text-center text-xs text-slate-500">
-        <div className="mx-auto max-w-5xl px-4">
-          <p>© 2026 KawalProyek - Portal Transparansi Proyek Pemerintah RI.</p>
+        <div className="mx-auto max-w-5xl px-4 flex flex-col items-center gap-2">
+          <SipantauLogo size="sm" />
+          <p className="mt-2">
+            © 2026 SIPANTAU - Portal Transparansi Proyek Pemerintah RI.
+          </p>
         </div>
       </footer>
     </div>

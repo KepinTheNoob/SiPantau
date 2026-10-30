@@ -70,13 +70,13 @@ export function AgencyManager({
                 <td className="px-4 py-3 text-slate-600">{agency.region}</td>
                 <td className="px-4 py-3">
                   <span
-                    className={`inline-flex rounded-full px-2 py-0.5 font-semibold ${
+                    className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                       agency.verified
-                        ? "bg-emerald-100 text-emerald-800"
+                        ? "bg-brand-green-light text-brand-green border border-brand-green/20"
                         : "bg-amber-100 text-amber-800"
                     }`}
                   >
-                    {agency.verified ? "Terverifikasi" : "Belum Diverifikasi"}
+                    {agency.verified ? "✓ Terverifikasi" : "Belum Diverifikasi"}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-right">
@@ -84,10 +84,10 @@ export function AgencyManager({
                     type="button"
                     disabled={isPending}
                     onClick={() => handleToggle(agency.id, agency.verified)}
-                    className={`rounded px-3 py-1 font-medium transition ${
+                    className={`rounded-lg px-3 py-1 text-xs font-semibold transition ${
                       agency.verified
                         ? "border border-red-300 bg-white text-red-700 hover:bg-red-50"
-                        : "bg-emerald-700 text-white hover:bg-emerald-600"
+                        : "bg-brand-green text-white hover:bg-brand-green-hover shadow-xs"
                     }`}
                   >
                     {agency.verified

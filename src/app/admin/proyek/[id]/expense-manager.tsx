@@ -111,7 +111,7 @@ export function ExpenseManager({
         <button
           type="button"
           onClick={() => setShowAddForm((prev) => !prev)}
-          className="rounded bg-slate-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-slate-800"
+          className="rounded-lg bg-brand-blue px-3.5 py-1.5 text-xs font-semibold text-white shadow-xs transition hover:bg-brand-blue-hover focus:outline-none focus:ring-2 focus:ring-brand-blue"
         >
           {showAddForm ? "Tutup Form" : "+ Catat Pengeluaran Baru"}
         </button>
@@ -267,7 +267,7 @@ export function ExpenseManager({
             <button
               type="submit"
               disabled={isPending}
-              className="rounded bg-slate-900 px-4 py-1 text-xs font-medium text-white hover:bg-slate-800 disabled:opacity-50"
+              className="rounded-lg bg-brand-blue px-4 py-1.5 text-xs font-semibold text-white shadow-xs transition hover:bg-brand-blue-hover disabled:opacity-50"
             >
               {isPending ? "Menyimpan..." : "Simpan Pengeluaran"}
             </button>

@@ -6,13 +6,14 @@ import {
   BUDGET_OVERRUN_THRESHOLD_PERCENT,
   PROJECTS_PER_PAGE,
 } from "@/lib/constants";
+import { SipantauLogo } from "@/components/sipantau-logo";
 
 export const metadata: Metadata = {
-  title: "Kawal Proyek - Portal Transparansi Proyek Pemerintah",
+  title: "SIPANTAU - Portal Transparansi Proyek Pemerintah",
   description:
     "Pantau realisasi anggaran dan tahapan progres fisik proyek pembangunan instansi pemerintah secara terbuka dan transparan.",
   openGraph: {
-    title: "Kawal Proyek - Transparansi Pembangunan Pemerintah",
+    title: "SIPANTAU - Transparansi Pembangunan Pemerintah",
     description:
       "Pantau tahapan dan anggaran proyek pemerintah langsung dari data instansi resmi.",
     type: "website",
@@ -72,20 +73,15 @@ export default async function HomePage({
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between">
       <div>
         <header className="border-b border-slate-200 bg-white sticky top-0 z-10 shadow-xs">
-          <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-            <Link href="/" className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-md bg-slate-900 text-sm font-bold text-white">
-                KP
-              </span>
-              <span className="text-lg font-bold tracking-tight text-slate-900">
-                KawalProyek
-              </span>
+          <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
+            <Link href="/" className="flex items-center">
+              <SipantauLogo size="md" />
             </Link>
 
             <nav className="flex items-center gap-4">
               <Link
                 href="/masuk"
-                className="rounded border border-slate-300 bg-white px-3.5 py-1.5 text-xs font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-900"
+                className="rounded-lg border border-brand-blue/30 bg-white px-3.5 py-1.5 text-xs font-semibold text-brand-blue shadow-xs transition hover:bg-brand-blue-light focus:outline-none focus:ring-2 focus:ring-brand-blue"
               >
                 Masuk Pengelola
               </Link>
@@ -95,14 +91,18 @@ export default async function HomePage({
 
         <section className="border-b border-slate-200 bg-white py-12 sm:py-16">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="max-w-2xl">
-              <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-                Transparansi Proyek Pembangunan Pemerintah
+            <div className="max-w-3xl">
+              <div className="inline-flex items-center gap-2 rounded-full bg-brand-blue-light px-3 py-1 text-xs font-semibold text-brand-blue border border-brand-blue/20 mb-4">
+                <span>🏛️</span>
+                <span>Portal Resmi Transparansi Anggaran & Progres Fisik</span>
+              </div>
+              <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
+                Pantau Proyek Pembangunan Pemerintah RI
               </h1>
-              <p className="mt-4 text-base text-slate-600 sm:text-lg">
+              <p className="mt-4 text-base text-slate-600 sm:text-lg leading-relaxed">
                 Masyarakat berhak mengetahui setiap rupiah anggaran publik yang
-                digunakan. Pantau tahapan landmark, bukti dokumentasi, dan
-                kesesuaian anggaran proyek secara terbuka.
+                digunakan. Pantau tahapan proyek, bukti verifikasi dokumentasi,
+                dan kesesuaian anggaran belanja secara akuntabel.
               </p>
             </div>
           </div>
@@ -136,7 +136,7 @@ export default async function HomePage({
                 id="filter-status"
                 name="status"
                 defaultValue={status ?? ""}
-                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800"
+                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-brand-blue focus:border-brand-blue"
               >
                 <option value="">Semua Status</option>
                 <option value="tepat_waktu">Tepat Waktu</option>
@@ -158,7 +158,7 @@ export default async function HomePage({
                 type="number"
                 placeholder="0"
                 defaultValue={minBudget ?? ""}
-                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs"
+                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-brand-blue focus:border-brand-blue"
               />
             </div>
 
@@ -175,21 +175,21 @@ export default async function HomePage({
                 type="number"
                 placeholder="5000000000"
                 defaultValue={maxBudget ?? ""}
-                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs"
+                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-brand-blue focus:border-brand-blue"
               />
             </div>
 
             <div className="self-end flex items-center gap-2">
               <button
                 type="submit"
-                className="rounded-lg bg-slate-900 px-4 py-2 font-semibold text-white hover:bg-slate-800"
+                className="rounded-lg bg-brand-blue px-4 py-2 font-semibold text-white hover:bg-brand-blue-hover shadow-xs transition focus:outline-none focus:ring-2 focus:ring-brand-blue focus:ring-offset-2"
               >
                 Terapkan Filter
               </button>
               {(status || minBudget || maxBudget) && (
                 <Link
                   href="/"
-                  className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-600 hover:bg-slate-50"
+                  className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-600 hover:bg-slate-50 transition"
                 >
                   Reset
                 </Link>
@@ -219,25 +219,35 @@ export default async function HomePage({
                   spentPercent - progress >= BUDGET_OVERRUN_THRESHOLD_PERCENT;
 
                 const agency = p.agencies;
+                const isCompleted = p.status_waktu === "selesai";
+                const isDelayed = p.status_waktu === "terlambat";
+
+                const statusBadgeStyle = isCompleted
+                  ? "bg-brand-green-light text-brand-green border border-brand-green/20"
+                  : isDelayed
+                    ? "bg-amber-50 text-amber-800 border border-amber-200"
+                    : "bg-brand-blue-light text-brand-blue border border-brand-blue/20";
 
                 return (
                   <article
                     key={p.project_id}
-                    className="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-6 shadow-xs transition hover:shadow-md"
+                    className="flex flex-col justify-between rounded-xl border border-slate-200 bg-white p-6 shadow-xs transition hover:border-brand-blue/40 hover:shadow-md"
                   >
                     <div>
                       <div className="flex items-center justify-between gap-2 text-xs text-slate-500 mb-2">
                         {agency ? (
                           <Link
                             href={`/instansi/${agency.slug}`}
-                            className="font-medium text-slate-700 hover:underline"
+                            className="font-medium text-slate-700 hover:text-brand-blue hover:underline"
                           >
                             {agency.name}
                           </Link>
                         ) : (
                           <span>Instansi Terverifikasi</span>
                         )}
-                        <span className="rounded bg-slate-100 px-2 py-0.5 text-slate-700 font-medium capitalize">
+                        <span
+                          className={`rounded px-2 py-0.5 text-xs font-semibold capitalize ${statusBadgeStyle}`}
+                        >
                           {p.status_waktu?.replace("_", " ") ?? "Tepat Waktu"}
                         </span>
                       </div>
@@ -245,7 +255,7 @@ export default async function HomePage({
                       <h3 className="text-base font-bold text-slate-900 line-clamp-2">
                         <Link
                           href={`/proyek/${p.slug}`}
-                          className="hover:text-slate-700"
+                          className="hover:text-brand-blue transition"
                         >
                           {p.title}
                         </Link>
@@ -254,11 +264,13 @@ export default async function HomePage({
                       <div className="mt-5">
                         <div className="flex justify-between text-xs font-semibold text-slate-700 mb-1">
                           <span>Progres Fisik</span>
-                          <span>{progress}%</span>
+                          <span className="font-bold text-brand-green">
+                            {progress}%
+                          </span>
                         </div>
                         <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
                           <div
-                            className="h-full rounded-full bg-slate-900 transition-all duration-300"
+                            className="h-full rounded-full bg-gradient-to-r from-brand-blue to-brand-green transition-all duration-300"
                             style={{ width: `${progress}%` }}
                           />
                         </div>
@@ -295,7 +307,7 @@ export default async function HomePage({
                     <div className="mt-6 border-t border-slate-100 pt-4">
                       <Link
                         href={`/proyek/${p.slug}`}
-                        className="inline-flex w-full items-center justify-center rounded-lg bg-slate-900 py-2 text-xs font-semibold text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2"
+                        className="inline-flex w-full items-center justify-center rounded-lg bg-brand-blue py-2.5 text-xs font-semibold text-white transition hover:bg-brand-blue-hover shadow-xs focus:outline-none focus:ring-2 focus:ring-brand-blue focus:ring-offset-2"
                       >
                         Lihat Tahapan & Rincian →
                       </Link>
@@ -325,7 +337,7 @@ export default async function HomePage({
               {currentPage < totalPages && (
                 <Link
                   href={`/?page=${currentPage + 1}`}
-                  className="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                  className="rounded border border-brand-blue/30 bg-white px-3 py-1.5 text-xs font-semibold text-brand-blue hover:bg-brand-blue-light"
                 >
                   Selanjutnya →
                 </Link>
@@ -336,9 +348,12 @@ export default async function HomePage({
       </div>
 
       <footer className="border-t border-slate-200 bg-white py-8 mt-16 text-center text-xs text-slate-500">
-        <div className="mx-auto max-w-7xl px-4">
-          <p>© 2026 KawalProyek - Portal Transparansi Proyek Pemerintah RI.</p>
-          <p className="mt-1">
+        <div className="mx-auto max-w-7xl px-4 flex flex-col items-center gap-2">
+          <SipantauLogo size="sm" />
+          <p className="mt-2">
+            © 2026 SIPANTAU - Portal Transparansi Proyek Pemerintah RI.
+          </p>
+          <p className="text-slate-400">
             Data dipublikasikan secara terbuka untuk pengawasan publik demi
             akuntabilitas bersama.
           </p>

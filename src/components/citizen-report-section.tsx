@@ -65,7 +65,7 @@ export function CitizenReportSection({
         <button
           type="button"
           onClick={() => setShowForm((prev) => !prev)}
-          className="rounded-lg bg-slate-900 px-3.5 py-2 text-xs font-semibold text-white shadow-xs hover:bg-slate-800"
+          className="rounded-lg bg-brand-blue px-3.5 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-brand-blue-hover focus:outline-none focus:ring-2 focus:ring-brand-blue"
         >
           {showForm ? "Tutup Form Laporan" : "📣 Buat Laporan Warga"}
         </button>
@@ -146,7 +146,7 @@ export function CitizenReportSection({
             <button
               type="submit"
               disabled={isPending}
-              className="rounded-lg bg-slate-900 px-4 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 disabled:opacity-50"
+              className="rounded-lg bg-brand-blue px-4 py-1.5 text-xs font-semibold text-white shadow-xs transition hover:bg-brand-blue-hover disabled:opacity-50"
             >
               {isPending ? "Mengirim Laporan..." : "Kirimkan Laporan"}
             </button>

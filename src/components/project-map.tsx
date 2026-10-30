@@ -66,7 +66,7 @@ export function ProjectMap({
         .marker([lat, lng], { icon })
         .addTo(map)
         .bindPopup(
-          `<div style="font-family: inherit;"><strong>${title}</strong><br/><span style="color: #64748b; font-size: 11px;">${locationName}</span></div>`
+          `<div style="font-family: inherit;"><strong style="color: #0D6BE3;">${title}</strong><br/><span style="color: #64748b; font-size: 11px;">📍 ${locationName}</span></div>`
         )
         .openPopup();
     });

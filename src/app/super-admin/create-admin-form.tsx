@@ -126,7 +126,7 @@ export function CreateAdminForm({
         <button
           type="submit"
           disabled={isPending}
-          className="rounded bg-slate-900 px-4 py-1.5 text-xs font-semibold text-white hover:bg-slate-800 disabled:opacity-50"
+          className="rounded-lg bg-brand-blue px-4 py-1.5 text-xs font-semibold text-white shadow-xs transition hover:bg-brand-blue-hover disabled:opacity-50"
         >
           {isPending ? "Mendaftarkan..." : "+ Buat Akun Admin"}
         </button>

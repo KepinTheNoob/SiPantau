@@ -52,7 +52,7 @@ export function LoginForm() {
           required
           autoComplete="email"
           placeholder="admin@instansi.go.id"
-          className="mt-1 block w-full rounded border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-800"
+          className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-brand-blue focus:outline-none focus:ring-1 focus:ring-brand-blue"
         />
       </div>
 
@@ -70,12 +70,12 @@ export function LoginForm() {
           required
           autoComplete="current-password"
           placeholder="••••••••"
-          className="mt-1 block w-full rounded border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-800"
+          className="mt-1 block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm shadow-xs focus:border-brand-blue focus:outline-none focus:ring-1 focus:ring-brand-blue"
         />
       </div>
 
       {showMfa && (
-        <div className="rounded border border-amber-200 bg-amber-50 p-3">
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
           <label
             htmlFor="totpCode"
             className="block text-sm font-medium text-amber-900"
@@ -92,7 +92,7 @@ export function LoginForm() {
             required
             autoComplete="one-time-code"
             placeholder="Contoh: 123456"
-            className="mt-1 block w-full rounded border border-amber-300 px-3 py-2 text-sm shadow-sm focus:border-amber-800 focus:outline-none focus:ring-1 focus:ring-amber-800"
+            className="mt-1 block w-full rounded-lg border border-amber-300 px-3 py-2 text-sm shadow-xs focus:border-amber-800 focus:outline-none focus:ring-1 focus:ring-amber-800"
           />
           <p className="mt-1 text-xs text-amber-700">
             Buka aplikasi Google Authenticator atau aplikasi sejenis untuk
@@ -104,7 +104,7 @@ export function LoginForm() {
       <button
         type="submit"
         disabled={isPending}
-        className="mt-2 w-full rounded bg-slate-900 py-2.5 text-center text-sm font-medium text-white transition hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+        className="mt-2 w-full rounded-lg bg-brand-blue py-2.5 text-center text-sm font-semibold text-white shadow-xs transition hover:bg-brand-blue-hover focus:outline-none focus:ring-2 focus:ring-brand-blue focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
       >
         {isPending
           ? "Memproses..."

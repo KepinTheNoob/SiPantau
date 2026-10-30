@@ -1,4 +1,4 @@
-# KawalProyek — Platform Transparansi Proyek Pemerintah
+# SIPANTAU - Platform Transparansi Proyek Pemerintah
 
 Platform publik tempat instansi pemerintah mempublikasikan proyek pembangunan beserta tahapan (_landmark_) dan realisasi anggaran. Masyarakat dapat memantau progres dan anggaran tanpa perlu login. Admin instansi mengelola data proyek milik instansinya sendiri melalui panel terproteksi.
 

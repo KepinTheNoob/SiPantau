@@ -6,11 +6,12 @@ import { logoutAction } from "@/server/actions/auth";
 import { AgencyManager } from "./agency-manager";
 import { CreateAdminForm } from "./create-admin-form";
 import { AuditLogViewer } from "@/components/audit-log-viewer";
+import { SipantauLogo } from "@/components/sipantau-logo";
 
 export const metadata: Metadata = {
-  title: "Panel Super Admin - KawalProyek",
+  title: "Panel Super Admin - SIPANTAU",
   description:
-    "Manajemen instansi, akun administrator, dan pengawasan audit log terpusat",
+    "Manajemen instansi, akun administrator, dan pengawasan audit log terpusat di SIPANTAU",
 };
 
 export default async function SuperAdminDashboardPage({
@@ -56,26 +57,32 @@ export default async function SuperAdminDashboardPage({
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-16">
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-          <div>
-            <span className="rounded bg-red-100 px-2.5 py-0.5 text-xs font-bold text-red-800 uppercase tracking-wider">
-              Akses Super Admin
-            </span>
-            <h1 className="mt-1 text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
-              Pusat Kontrol & Pengawasan
-            </h1>
+          <div className="flex items-center gap-4">
+            <Link href="/" className="hover:opacity-90 transition">
+              <SipantauLogo size="sm" />
+            </Link>
+            <div className="h-6 w-px bg-slate-200" />
+            <div>
+              <span className="rounded bg-red-100 px-2 py-0.5 text-[11px] font-bold text-red-800 uppercase tracking-wider">
+                Akses Super Admin
+              </span>
+              <h1 className="mt-0.5 text-lg font-bold tracking-tight text-slate-900 sm:text-xl">
+                Pusat Kontrol & Pengawasan
+              </h1>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">
             <Link
               href="/"
-              className="text-xs text-slate-600 hover:text-slate-900"
+              className="text-xs font-semibold text-brand-blue hover:underline"
             >
-              Lihat Publik
+              Lihat Beranda Publik ↗
             </Link>
             <form action={logoutAction}>
               <button
                 type="submit"
-                className="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition"
               >
                 Keluar
               </button>
@@ -94,7 +101,7 @@ export default async function SuperAdminDashboardPage({
 
         <section className="flex flex-col gap-4">
           <h2 className="text-lg font-bold text-slate-900">
-            Pendaftaran Akun Admin Instansi
+            Pendaftaran Admin Instansi
           </h2>
           <CreateAdminForm agencies={agencies} />
         </section>
@@ -115,7 +122,7 @@ export default async function SuperAdminDashboardPage({
               <select
                 name="agencyId"
                 defaultValue={agencyId ?? ""}
-                className="rounded border border-slate-300 bg-white px-2 py-1 text-xs"
+                className="rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs"
               >
                 <option value="">Semua Instansi</option>
                 {agencies.map((ag) => (
@@ -128,7 +135,7 @@ export default async function SuperAdminDashboardPage({
               <select
                 name="action"
                 defaultValue={action ?? ""}
-                className="rounded border border-slate-300 bg-white px-2 py-1 text-xs"
+                className="rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs"
               >
                 <option value="">Semua Aksi</option>
                 <option value="INSERT">INSERT</option>
@@ -138,7 +145,7 @@ export default async function SuperAdminDashboardPage({
 
               <button
                 type="submit"
-                className="rounded bg-slate-900 px-3 py-1 text-xs font-medium text-white hover:bg-slate-800"
+                className="rounded-lg bg-brand-blue px-3 py-1 text-xs font-semibold text-white shadow-xs hover:bg-brand-blue-hover transition"
               >
                 Filter
               </button>
