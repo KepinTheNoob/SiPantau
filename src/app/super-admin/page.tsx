@@ -5,8 +5,10 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { logoutAction } from "@/server/actions/auth";
 import { AgencyManager } from "./agency-manager";
 import { CreateAdminForm } from "./create-admin-form";
+import { UserAccountList } from "./user-account-list";
 import { AuditLogViewer } from "@/components/audit-log-viewer";
 import { SipantauLogo } from "@/components/sipantau-logo";
+import { listUserAccounts } from "@/server/admin-only/accounts";
 
 export const metadata: Metadata = {
   title: "Panel Super Admin - SIPANTAU",
@@ -52,6 +54,9 @@ export default async function SuperAdminDashboardPage({
 
   const { data: logsData } = await query;
   const logs = logsData ?? [];
+
+  // 3. Fetch Registered User Accounts
+  const userAccounts = await listUserAccounts();
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-16">
@@ -104,6 +109,13 @@ export default async function SuperAdminDashboardPage({
             Pendaftaran Admin Instansi
           </h2>
           <CreateAdminForm agencies={agencies} />
+        </section>
+
+        <section className="flex flex-col gap-4">
+          <h2 className="text-lg font-bold text-slate-900">
+            Daftar Akun & Email Administrator
+          </h2>
+          <UserAccountList accounts={userAccounts} />
         </section>
 
         <section className="flex flex-col gap-4">

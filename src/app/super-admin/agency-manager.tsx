@@ -47,13 +47,16 @@ export function AgencyManager({
               <th scope="col" className="px-4 py-3">
                 Nama Instansi
               </th>
-              <th scope="col" className="px-4 py-3">
+              <th scope="col" className="px-4 py-3 whitespace-nowrap">
                 Wilayah
               </th>
-              <th scope="col" className="px-4 py-3">
+              <th scope="col" className="px-4 py-3 whitespace-nowrap">
                 Status Verifikasi
               </th>
-              <th scope="col" className="px-4 py-3 text-right">
+              <th
+                scope="col"
+                className="px-4 py-3 text-right whitespace-nowrap"
+              >
                 Tindakan
               </th>
             </tr>
@@ -67,8 +70,10 @@ export function AgencyManager({
                     {agency.slug}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-slate-600">{agency.region}</td>
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
+                  {agency.region}
+                </td>
+                <td className="px-4 py-3 whitespace-nowrap">
                   <span
                     className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                       agency.verified
@@ -79,7 +84,7 @@ export function AgencyManager({
                     {agency.verified ? "✓ Terverifikasi" : "Belum Diverifikasi"}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-right">
+                <td className="px-4 py-3 text-right whitespace-nowrap">
                   <button
                     type="button"
                     disabled={isPending}

@@ -9,6 +9,7 @@ import {
   toggleAgencyVerification,
   createAgencyAdminAccount,
 } from "@/server/actions/super-admin";
+import { listUserAccounts } from "@/server/admin-only/accounts";
 import { requireSuperAdmin } from "@/server/auth";
 import { ForbiddenError } from "@/server/auth/errors";
 
@@ -114,5 +115,33 @@ describe("Fase 6: Super Admin & Audit Log Authorization", () => {
 
     expect(error).toBeNull();
     expect(logs).toBeDefined();
+  });
+
+  it("standard admin cannot list user accounts", async () => {
+    await expect(listUserAccounts(adminA.client)).rejects.toThrow(
+      ForbiddenError
+    );
+  });
+
+  it("super admin can list registered user accounts including emails", async () => {
+    const accounts = await listUserAccounts(superAdmin.client);
+    expect(accounts.length).toBeGreaterThanOrEqual(2);
+
+    const emailList: string[] = [];
+
+    for (const acc of accounts) {
+      emailList.push(acc.email);
+    }
+
+    expect(emailList).toContain("super.governor@gov.id");
+    expect(emailList).toContain("new.admin.kelautan@gov.id");
+
+    const createdAdmin = accounts.find(
+      (acc) => acc.email === "new.admin.kelautan@gov.id"
+    );
+
+    expect(createdAdmin).toBeDefined();
+    expect(createdAdmin?.role).toBe("admin");
+    expect(createdAdmin?.agencyName).toBe("Dinas Kelautan dan Perikanan");
   });
 });

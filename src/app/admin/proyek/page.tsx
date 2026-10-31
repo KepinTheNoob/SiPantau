@@ -94,16 +94,19 @@ export default async function AdminProjectsPage() {
                     <th scope="col" className="px-6 py-3">
                       Kategori & Wilayah
                     </th>
-                    <th scope="col" className="px-6 py-3">
+                    <th scope="col" className="px-6 py-3 whitespace-nowrap">
                       Total Anggaran
                     </th>
-                    <th scope="col" className="px-6 py-3">
+                    <th scope="col" className="px-6 py-3 whitespace-nowrap">
                       Target Selesai
                     </th>
-                    <th scope="col" className="px-6 py-3">
+                    <th scope="col" className="px-6 py-3 whitespace-nowrap">
                       Status
                     </th>
-                    <th scope="col" className="px-6 py-3 text-right">
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-right whitespace-nowrap"
+                    >
                       Tindakan
                     </th>
                   </tr>
@@ -133,14 +136,14 @@ export default async function AdminProjectsPage() {
                             {project.location_name}
                           </div>
                         </td>
-                        <td className="px-6 py-4 font-mono text-slate-800 font-semibold">
+                        <td className="px-6 py-4 font-mono text-slate-800 font-semibold whitespace-nowrap">
                           Rp{" "}
                           {Number(project.budget_total).toLocaleString("id-ID")}
                         </td>
-                        <td className="px-6 py-4 text-slate-600">
+                        <td className="px-6 py-4 text-slate-600 whitespace-nowrap">
                           {project.target_end_date}
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-6 py-4 whitespace-nowrap">
                           <span
                             className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                               isArchived
@@ -151,12 +154,13 @@ export default async function AdminProjectsPage() {
                             {isArchived ? "Diarsipkan" : "Aktif"}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-right">
+                        <td className="px-6 py-4 text-right whitespace-nowrap">
                           <Link
                             href={`/admin/proyek/${project.id}`}
-                            className="rounded-lg border border-brand-blue/30 px-3 py-1 text-xs font-semibold text-brand-blue hover:bg-brand-blue-light transition"
+                            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-brand-blue/30 bg-white px-3.5 py-1.5 text-xs font-semibold text-brand-blue shadow-xs hover:bg-brand-blue-light hover:border-brand-blue transition whitespace-nowrap"
                           >
-                            Kelola & Tahapan →
+                            <span>Kelola & Tahapan</span>
+                            <span aria-hidden="true">→</span>
                           </Link>
                         </td>
                       </tr>
