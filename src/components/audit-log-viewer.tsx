@@ -14,7 +14,7 @@ export function AuditLogViewer({
 
   if (logs.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500 bg-white">
+      <div className="rounded-xl border border-dashed border-slate-300 p-8 text-center text-xs text-slate-500 bg-white">
         Tidak ada catatan audit log yang cocok dengan filter.
       </div>
     );

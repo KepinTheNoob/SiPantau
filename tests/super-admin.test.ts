@@ -117,6 +117,36 @@ describe("Fase 6: Super Admin & Audit Log Authorization", () => {
     expect(logs).toBeDefined();
   });
 
+  it("audit logs support pagination with range and exact count", async () => {
+    // Insert a project to trigger audit log insertion
+    await serviceClient.from("projects").insert({
+      agency_id: agencyAId,
+      title: "Proyek Audit Test",
+      slug: "proyek-audit-test",
+      description: "Deskripsi audit test",
+      category: "Jalan & Jembatan",
+      location_name: "Ambon",
+      budget_total: 500000000,
+      start_date: "2026-01-01",
+      target_end_date: "2026-12-31",
+    });
+
+    const {
+      data: page1,
+      count: totalCount,
+      error,
+    } = await superAdmin.client
+      .from("audit_logs")
+      .select("*", { count: "exact" })
+      .order("created_at", { ascending: false })
+      .range(0, 0);
+
+    expect(error).toBeNull();
+    expect(totalCount).toBeGreaterThanOrEqual(1);
+    expect(page1).toBeDefined();
+    expect(page1?.length).toBe(1);
+  });
+
   it("standard admin cannot list user accounts", async () => {
     await expect(listUserAccounts(adminA.client)).rejects.toThrow(
       ForbiddenError
