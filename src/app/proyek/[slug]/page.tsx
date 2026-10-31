@@ -9,6 +9,7 @@ import { getSupabaseUrl } from "@/lib/supabase/env";
 import { ProjectMap } from "@/components/project-map";
 import { CitizenReportSection } from "@/components/citizen-report-section";
 import { SipantauLogo } from "@/components/sipantau-logo";
+import { PublicHeader } from "@/components/public-header";
 
 export async function generateMetadata({
   params,
@@ -107,20 +108,7 @@ export default async function ProjectDetailPage({
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between">
       <div>
-        <header className="border-b border-slate-200 bg-white sticky top-0 z-10 shadow-xs">
-          <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3.5 sm:px-6">
-            <Link href="/" className="flex items-center">
-              <SipantauLogo size="md" />
-            </Link>
-
-            <Link
-              href="/masuk"
-              className="rounded-lg border border-brand-blue/30 bg-white px-3.5 py-1.5 text-xs font-semibold text-brand-blue hover:bg-brand-blue-light transition focus:outline-none focus:ring-2 focus:ring-brand-blue"
-            >
-              Masuk Pengelola
-            </Link>
-          </div>
-        </header>
+        <PublicHeader active={null} containerClassName="max-w-5xl" />
 
         <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 flex flex-col gap-8">
           <div className="flex items-center gap-2 text-sm text-slate-500">

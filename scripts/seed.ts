@@ -45,6 +45,126 @@ async function findOrCreateUser(
   return data.user.id;
 }
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Tanggal `YYYY-MM-DD` relatif terhadap hari seed dijalankan, supaya status demo tetap relevan. */
+function isoDateFromToday(offsetDays: number): string {
+  return new Date(Date.now() + offsetDays * DAY_MS).toISOString().slice(0, 10);
+}
+
+/** Tanggal hari Minggu berikutnya (untuk car free day). */
+function nextSundayOffset(): number {
+  const day = new Date().getUTCDay();
+
+  return day === 0 ? 7 : 7 - day;
+}
+
+type SeedRoadLandmark = {
+  readonly name: string;
+  readonly weight: number;
+  readonly done: boolean;
+};
+
+type SeedRoadExpense = {
+  readonly amount: number;
+  readonly note: string;
+  readonly landmarkIndex: number;
+  readonly spentOffsetDays: number;
+};
+
+type SeedRoadProject = {
+  readonly agencyId: string;
+  readonly slug: string;
+  readonly title: string;
+  readonly description: string;
+  readonly category: string;
+  readonly locationName: string;
+  readonly lat: number;
+  readonly lng: number;
+  readonly budgetTotal: number;
+  readonly startOffsetDays: number;
+  readonly endOffsetDays: number;
+  readonly landmarks: readonly SeedRoadLandmark[];
+  readonly expenses: readonly SeedRoadExpense[];
+};
+
+async function seedRoadProject(project: SeedRoadProject): Promise<void> {
+  const { data: row, error } = await client
+    .from("projects")
+    .upsert(
+      {
+        agency_id: project.agencyId,
+        slug: project.slug,
+        title: project.title,
+        description: project.description,
+        category: project.category,
+        location_name: project.locationName,
+        lat: project.lat,
+        lng: project.lng,
+        budget_total: project.budgetTotal,
+        start_date: isoDateFromToday(project.startOffsetDays),
+        target_end_date: isoDateFromToday(project.endOffsetDays),
+      },
+      { onConflict: "slug" }
+    )
+    .select()
+    .single();
+
+  if (error || !row) {
+    throw new Error(`Gagal membuat proyek ${project.slug}: ${error?.message}`);
+  }
+
+  await client.from("landmarks").delete().eq("project_id", row.id);
+
+  if (project.landmarks.length === 0) {
+    return;
+  }
+
+  const { data: landmarks, error: landmarkError } = await client
+    .from("landmarks")
+    .insert(
+      project.landmarks.map((landmark, index) => ({
+        project_id: row.id,
+        name: landmark.name,
+        weight: landmark.weight,
+        position: index + 1,
+        done: landmark.done,
+        done_at: landmark.done
+          ? `${isoDateFromToday(project.startOffsetDays + (index + 1) * 14)}T09:00:00Z`
+          : null,
+      }))
+    )
+    .select();
+
+  if (landmarkError) {
+    throw new Error(
+      `Gagal membuat tahapan ${project.slug}: ${landmarkError.message}`
+    );
+  }
+
+  await client.from("expenses").delete().eq("project_id", row.id);
+
+  if (project.expenses.length === 0) {
+    return;
+  }
+
+  const { error: expenseError } = await client.from("expenses").insert(
+    project.expenses.map((expense) => ({
+      project_id: row.id,
+      landmark_id: landmarks?.[expense.landmarkIndex]?.id ?? null,
+      amount: expense.amount,
+      note: expense.note,
+      spent_at: isoDateFromToday(expense.spentOffsetDays),
+    }))
+  );
+
+  if (expenseError) {
+    throw new Error(
+      `Gagal membuat pengeluaran ${project.slug}: ${expenseError.message}`
+    );
+  }
+}
+
 async function main() {
   console.log("🌱 Menyiapkan data awal (seeding)...");
 
@@ -57,7 +177,7 @@ async function main() {
       {
         name: "Dinas Pekerjaan Umum dan Penataan Ruang (PUPR)",
         slug: "dinas-pupr",
-        region: "Provinsi Kalimantan Selatan",
+        region: "Provinsi DKI Jakarta",
         verified: true,
       },
       { onConflict: "slug" }
@@ -75,7 +195,7 @@ async function main() {
       {
         name: "Dinas Perumahan Rakyat dan Kawasan Permukiman",
         slug: "dinas-perumahan-rakyat",
-        region: "Provinsi Kalimantan Selatan",
+        region: "Provinsi DKI Jakarta",
         verified: true,
       },
       { onConflict: "slug" }
@@ -112,22 +232,28 @@ async function main() {
     agency_id: agencyPupr.id,
   });
 
-  // 3. Proyek 1: Jembatan Sei Alalak
+  // 3. Proyek 1: Jembatan Kali Ciliwung
   console.log("-> Menyiapkan proyek demo...");
+
+  // Data demo lama berlokasi di Banjarmasin; hapus supaya database lokal ikut pindah ke Jakarta.
+  await client
+    .from("projects")
+    .delete()
+    .eq("slug", "pembangunan-jembatan-sei-alalak");
 
   const { data: proj1, error: errP1 } = await client
     .from("projects")
     .upsert(
       {
         agency_id: agencyPupr.id,
-        slug: "pembangunan-jembatan-sei-alalak",
-        title: "Pembangunan Jembatan Sei Alalak",
+        slug: "pembangunan-jembatan-ciliwung-kampung-melayu",
+        title: "Pembangunan Jembatan Penghubung Kali Ciliwung Kampung Melayu",
         description:
-          "Proyek pembangunan jembatan bentang lengkung untuk mengurai kemacetan dan memperlancar konektivitas logistik antarwilayah.",
-        category: "Infrastruktur",
-        location_name: "Banjarmasin Utara, Kalimantan Selatan",
-        lat: -3.2842,
-        lng: 114.5881,
+          "Proyek pembangunan jembatan bentang lengkung di atas Kali Ciliwung untuk mengurai kemacetan Kampung Melayu - Jatinegara dan membuka akses kendaraan antarkelurahan. (Data demo untuk pengembangan.)",
+        category: "Pembangunan Jalan & Jembatan",
+        location_name: "Kampung Melayu, Jakarta Timur",
+        lat: -6.2235,
+        lng: 106.8655,
         budget_total: 15000000000,
         start_date: "2026-01-15",
         target_end_date: "2026-12-31",
@@ -225,9 +351,9 @@ async function main() {
         description:
           "Normalisasi dan perkuatan tanggul saluran pembuangan air utama guna menanggulangi genangan banjir musiman di kawasan permukiman padat.",
         category: "Lingkungan",
-        location_name: "Banjarmasin Tengah",
-        lat: -3.3194,
-        lng: 114.5908,
+        location_name: "Tanah Abang, Jakarta Pusat",
+        lat: -6.2088,
+        lng: 106.8136,
         budget_total: 3200000000,
         start_date: "2026-02-01",
         target_end_date: "2026-08-31",
@@ -288,9 +414,9 @@ async function main() {
         description:
           "Penyediaan hunian vertikal layak huni sebanyak 90 unit tipe 36 dilengkapi fasilitas ruang terbuka hijau dan sarana ramah difabel.",
         category: "Perumahan",
-        location_name: "Banjarmasin Selatan",
-        lat: -3.3421,
-        lng: 114.6052,
+        location_name: "Cakung, Jakarta Timur",
+        lat: -6.188,
+        lng: 106.942,
         budget_total: 8500000000,
         start_date: "2026-03-01",
         target_end_date: "2026-12-15",
@@ -330,6 +456,251 @@ async function main() {
     },
   ]);
 
+  // 6. Data demo PantauJalan (DKI Jakarta), mencakup semua kategori jalan
+  console.log("-> Menyiapkan data demo PantauJalan (DKI Jakarta)...");
+
+  const { data: agencyBinaMarga, error: errBinaMarga } = await client
+    .from("agencies")
+    .upsert(
+      {
+        name: "Dinas Bina Marga Provinsi DKI Jakarta",
+        slug: "dinas-bina-marga-dki",
+        region: "Provinsi DKI Jakarta",
+        verified: true,
+      },
+      { onConflict: "slug" }
+    )
+    .select()
+    .single();
+
+  if (errBinaMarga || !agencyBinaMarga) {
+    throw new Error(
+      `Gagal membuat agency Bina Marga: ${errBinaMarga?.message}`
+    );
+  }
+
+  const { data: agencyDishub, error: errDishub } = await client
+    .from("agencies")
+    .upsert(
+      {
+        name: "Dinas Perhubungan Provinsi DKI Jakarta",
+        slug: "dinas-perhubungan-dki",
+        region: "Provinsi DKI Jakarta",
+        verified: true,
+      },
+      { onConflict: "slug" }
+    )
+    .select()
+    .single();
+
+  if (errDishub || !agencyDishub) {
+    throw new Error(`Gagal membuat agency Dishub: ${errDishub?.message}`);
+  }
+
+  const DEMO_NOTE = " (Data demo untuk pengembangan.)";
+
+  const roadProjects: readonly SeedRoadProject[] = [
+    {
+      agencyId: agencyBinaMarga.id,
+      slug: "demo-pengaspalan-ulang-gatot-subroto",
+      title: "Pengaspalan Ulang Jl. Gatot Subroto Ruas Semanggi - Kuningan",
+      description:
+        "Pengupasan dan pelapisan ulang aspal dua lajur kiri arah Cawang. Pekerjaan malam hari pukul 22.00 - 05.00, satu lajur ditutup bergantian." +
+        DEMO_NOTE,
+      category: "Perbaikan Jalan",
+      locationName: "Jl. Gatot Subroto, Jakarta Selatan",
+      lat: -6.2297,
+      lng: 106.8208,
+      budgetTotal: 2400000000,
+      startOffsetDays: -60,
+      endOffsetDays: 45,
+      landmarks: [
+        {
+          name: "Pengupasan lapisan aspal lama (milling)",
+          weight: 35,
+          done: true,
+        },
+        {
+          name: "Pelapisan aspal AC-WC lajur 1 dan 2",
+          weight: 45,
+          done: false,
+        },
+        { name: "Marka jalan dan pembukaan lajur", weight: 20, done: false },
+      ],
+      expenses: [
+        {
+          amount: 750000000,
+          note: "Sewa mesin milling dan pengangkutan material bongkaran",
+          landmarkIndex: 0,
+          spentOffsetDays: -40,
+        },
+      ],
+    },
+    {
+      agencyId: agencyBinaMarga.id,
+      slug: "demo-perbaikan-trotoar-pasar-minggu",
+      title: "Perbaikan Trotoar dan Saluran Tepi Jl. Raya Pasar Minggu",
+      description:
+        "Pembongkaran trotoar rusak dan saluran tepi jalan di sisi barat. Bahu jalan dipakai untuk material sehingga lajur kiri menyempit." +
+        DEMO_NOTE,
+      category: "Perbaikan Jalan",
+      locationName: "Jl. Raya Pasar Minggu, Jakarta Selatan",
+      lat: -6.27,
+      lng: 106.84,
+      budgetTotal: 1800000000,
+      startOffsetDays: -150,
+      endOffsetDays: -14,
+      landmarks: [
+        {
+          name: "Pembongkaran trotoar dan saluran lama",
+          weight: 30,
+          done: true,
+        },
+        { name: "Pemasangan saluran U-ditch", weight: 40, done: true },
+        { name: "Pemasangan paving dan ubin pemandu", weight: 30, done: false },
+      ],
+      expenses: [
+        {
+          amount: 1350000000,
+          note: "Pengadaan U-ditch precast dan upah pemasangan",
+          landmarkIndex: 1,
+          spentOffsetDays: -70,
+        },
+      ],
+    },
+    {
+      agencyId: agencyBinaMarga.id,
+      slug: "demo-flyover-simpang-tanjung-barat",
+      title: "Pembangunan Flyover Simpang Tanjung Barat",
+      description:
+        "Flyover dua lajur di atas perlintasan sebidang. Arus kendaraan dialihkan ke jalur samping selama pengecoran pilar." +
+        DEMO_NOTE,
+      category: "Pembangunan Jalan & Jembatan",
+      locationName: "Tanjung Barat, Jakarta Selatan",
+      lat: -6.3075,
+      lng: 106.838,
+      budgetTotal: 98000000000,
+      startOffsetDays: -200,
+      endOffsetDays: 240,
+      landmarks: [
+        { name: "Pondasi bore pile dan pile cap", weight: 25, done: true },
+        { name: "Pilar dan pier head", weight: 25, done: true },
+        { name: "Pemasangan girder dan pelat lantai", weight: 30, done: false },
+        {
+          name: "Pengaspalan, penerangan, dan uji beban",
+          weight: 20,
+          done: false,
+        },
+      ],
+      expenses: [
+        {
+          amount: 41000000000,
+          note: "Pekerjaan struktur bawah dan pilar",
+          landmarkIndex: 1,
+          spentOffsetDays: -60,
+        },
+      ],
+    },
+    {
+      agencyId: agencyBinaMarga.id,
+      slug: "demo-pelebaran-jalan-ciledug-raya",
+      title: "Pelebaran Jl. Ciledug Raya Ruas Kebayoran Lama",
+      description:
+        "Penambahan satu lajur di kedua arah beserta trotoar baru. Seluruh lajur sudah dibuka untuk umum." +
+        DEMO_NOTE,
+      category: "Pembangunan Jalan & Jembatan",
+      locationName: "Jl. Ciledug Raya, Jakarta Selatan",
+      lat: -6.239,
+      lng: 106.757,
+      budgetTotal: 12500000000,
+      startOffsetDays: -300,
+      endOffsetDays: -30,
+      landmarks: [
+        {
+          name: "Pembebasan lahan dan pemindahan utilitas",
+          weight: 30,
+          done: true,
+        },
+        { name: "Konstruksi lajur tambahan", weight: 50, done: true },
+        { name: "Trotoar, marka, dan serah terima", weight: 20, done: true },
+      ],
+      expenses: [
+        {
+          amount: 11800000000,
+          note: "Konstruksi lajur tambahan dan trotoar",
+          landmarkIndex: 1,
+          spentOffsetDays: -90,
+        },
+      ],
+    },
+    {
+      agencyId: agencyBinaMarga.id,
+      slug: "demo-galian-kabel-bawah-tanah-kramat-raya",
+      title: "Galian Jaringan Kabel Listrik Bawah Tanah Jl. Kramat Raya",
+      description:
+        "Galian sistem buka-tutup per 50 meter di lajur lambat arah Senen untuk penanaman kabel tegangan menengah." +
+        DEMO_NOTE,
+      category: "Kabel Listrik Bawah Tanah",
+      locationName: "Jl. Kramat Raya, Jakarta Pusat",
+      lat: -6.187,
+      lng: 106.844,
+      budgetTotal: 3600000000,
+      startOffsetDays: -20,
+      endOffsetDays: 30,
+      landmarks: [
+        {
+          name: "Galian dan penanaman kabel segmen 1-4",
+          weight: 60,
+          done: false,
+        },
+        {
+          name: "Penutupan galian dan pengaspalan kembali",
+          weight: 40,
+          done: false,
+        },
+      ],
+      expenses: [],
+    },
+    {
+      agencyId: agencyDishub.id,
+      slug: "demo-car-free-day-sudirman-thamrin",
+      title: "Car Free Day Sudirman - Thamrin",
+      description:
+        "Jl. Jenderal Sudirman dan Jl. M.H. Thamrin ditutup untuk kendaraan bermotor pukul 06.00 - 09.00. Gunakan jalur alternatif lewat Jl. Kebon Sirih atau Jl. Rasuna Said." +
+        DEMO_NOTE,
+      category: "Acara & Penutupan Jalan",
+      locationName: "Bundaran HI, Jakarta Pusat",
+      lat: -6.195,
+      lng: 106.823,
+      budgetTotal: 0,
+      startOffsetDays: nextSundayOffset(),
+      endOffsetDays: nextSundayOffset(),
+      landmarks: [],
+      expenses: [],
+    },
+    {
+      agencyId: agencyDishub.id,
+      slug: "demo-penutupan-medan-merdeka-barat",
+      title: "Penutupan Jl. Medan Merdeka Barat untuk Penyampaian Aspirasi",
+      description:
+        "Arus dari Jl. M.H. Thamrin menuju Harmoni dialihkan sejak pukul 10.00 sampai kegiatan selesai. Hindari kawasan Patung Kuda." +
+        DEMO_NOTE,
+      category: "Acara & Penutupan Jalan",
+      locationName: "Jl. Medan Merdeka Barat, Jakarta Pusat",
+      lat: -6.1772,
+      lng: 106.8226,
+      budgetTotal: 0,
+      startOffsetDays: 2,
+      endOffsetDays: 2,
+      landmarks: [],
+      expenses: [],
+    },
+  ];
+
+  for (const roadProject of roadProjects) {
+    await seedRoadProject(roadProject);
+  }
+
   console.log("✅ Seeding selesai dengan sukses!");
   console.log("--------------------------------------------------");
   console.log("Kredensial Demo:");
@@ -342,6 +713,9 @@ async function main() {
   console.log("   Email   : admin.pupr@transparansi.go.id");
   console.log("   Password: Password123!");
   console.log("   URL     : http://localhost:3000/admin");
+  console.log("");
+  console.log("PantauJalan (7 proyek demo DKI Jakarta):");
+  console.log("   URL     : http://localhost:3000/pantau-jalan");
   console.log("--------------------------------------------------");
 }
 

@@ -7,6 +7,7 @@ import {
   PROJECTS_PER_PAGE,
 } from "@/lib/constants";
 import { SipantauLogo } from "@/components/sipantau-logo";
+import { PublicHeader } from "@/components/public-header";
 
 export const metadata: Metadata = {
   title: "SIPANTAU - Portal Transparansi Proyek Pemerintah",
@@ -72,22 +73,7 @@ export default async function HomePage({
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between">
       <div>
-        <header className="border-b border-slate-200 bg-white sticky top-0 z-10 shadow-xs">
-          <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
-            <Link href="/" className="flex items-center">
-              <SipantauLogo size="md" />
-            </Link>
-
-            <nav className="flex items-center gap-4">
-              <Link
-                href="/masuk"
-                className="rounded-lg border border-brand-blue/30 bg-white px-3.5 py-1.5 text-xs font-semibold text-brand-blue shadow-xs transition hover:bg-brand-blue-light focus:outline-none focus:ring-2 focus:ring-brand-blue"
-              >
-                Masuk Pengelola
-              </Link>
-            </nav>
-          </div>
-        </header>
+        <PublicHeader active="proyek" containerClassName="max-w-7xl" />
 
         <section className="border-b border-slate-200 bg-white py-12 sm:py-16">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createProject, type FieldError } from "@/server/actions/projects";
+import { ProjectCategorySelect } from "@/components/project-category-select";
 
 export function ProjectCreateForm() {
   const router = useRouter();
@@ -102,26 +103,7 @@ export function ProjectCreateForm() {
           >
             Kategori Proyek *
           </label>
-          <select
-            id="category"
-            name="category"
-            required
-            className="mt-1 block w-full rounded border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-800 bg-white"
-          >
-            <option value="">Pilih Kategori</option>
-            <option value="Infrastruktur & Jalan">Infrastruktur & Jalan</option>
-            <option value="Pendidikan & Sekolah">Pendidikan & Sekolah</option>
-            <option value="Kesehatan & Rumah Sakit">
-              Kesehatan & Rumah Sakit
-            </option>
-            <option value="Lingkungan Hidup & Air">
-              Lingkungan Hidup & Air
-            </option>
-            <option value="Teknologi & Digitalisasi">
-              Teknologi & Digitalisasi
-            </option>
-            <option value="Lainnya">Lainnya</option>
-          </select>
+          <ProjectCategorySelect className="mt-1 block w-full rounded border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-800 bg-white" />
           {getFieldError("category") && (
             <p className="mt-1 text-xs text-red-600">
               {getFieldError("category")}

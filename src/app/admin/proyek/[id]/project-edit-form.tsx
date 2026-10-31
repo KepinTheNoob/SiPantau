@@ -8,6 +8,7 @@ import {
   archiveProject,
   type FieldError,
 } from "@/server/actions/projects";
+import { ProjectCategorySelect } from "@/components/project-category-select";
 
 type ProjectRow = Database["public"]["Tables"]["projects"]["Row"];
 
@@ -154,13 +155,9 @@ export function ProjectEditForm({ project }: { readonly project: ProjectRow }) {
             >
               Kategori Proyek *
             </label>
-            <input
-              id="category"
-              name="category"
-              type="text"
-              required
+            <ProjectCategorySelect
               defaultValue={project.category}
-              className="mt-1 block w-full rounded border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-800"
+              className="mt-1 block w-full rounded border border-slate-300 px-3 py-2 text-sm shadow-sm focus:border-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-800 bg-white"
             />
             {getFieldError("category") && (
               <p className="mt-1 text-xs text-red-600">

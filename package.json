@@ -12,7 +12,7 @@
     "check": "oxlint --fix && prettier --write . && oxlint && tsc --noEmit && vitest run",
     "check:ci": "oxlint --fix && prettier --write . && oxlint && tsc --noEmit && vitest run",
     "db:types": "supabase gen types typescript --local > src/db/types.ts",
-    "db:seed": "node --experimental-strip-types scripts/seed.ts",
+    "db:seed": "node --env-file=.env.local --experimental-strip-types scripts/seed.ts",
     "test": "vitest run"
   },
   "dependencies": {
@@ -38,5 +38,5 @@
     "typescript": "^5",
     "vitest": "^5.0.5"
   },
-  "packageManager": "pnpm@11.13.0"
+  "packageManager": "pnpm@12.16.1"
 }
