@@ -5,7 +5,11 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/db/types";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { requireSuperAdmin } from "@/server/auth";
-import { createAgencyAdminUser } from "@/server/admin-only/accounts";
+import {
+  createAgencyAdminUser,
+  deleteAgencyAdminAccount,
+  updateAgencyAdminAccount,
+} from "@/server/admin-only/accounts";
 
 export type SuperAdminActionResult = {
   readonly success: boolean;
@@ -103,6 +107,77 @@ export async function createAgencyAdminAccount(
     return {
       success: false,
       message: errorMsg,
+    };
+  }
+}
+
+const updateAdminSchema = z.object({
+  adminId: z.string().uuid("ID admin tidak valid."),
+  agencyId: z.string().uuid("ID instansi tidak valid."),
+  email: z.string().email("Format email admin tidak valid."),
+});
+
+export async function updateAgencyAdmin(
+  formData: FormData,
+  client?: SupabaseClient<Database>
+): Promise<SuperAdminActionResult> {
+  const parsed = updateAdminSchema.safeParse({
+    adminId: formData.get("adminId"),
+    agencyId: formData.get("agencyId"),
+    email: formData.get("email"),
+  });
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      message: parsed.error.issues[0]?.message ?? "Input tidak valid.",
+    };
+  }
+
+  await requireSuperAdmin(client);
+
+  try {
+    await updateAgencyAdminAccount(parsed.data, client);
+
+    return { success: true, message: "Data admin berhasil diperbarui." };
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Gagal mengubah admin.",
+    };
+  }
+}
+
+const deleteAdminSchema = z.object({
+  adminId: z.string().uuid("ID admin tidak valid."),
+});
+
+export async function deleteAgencyAdmin(
+  formData: FormData,
+  client?: SupabaseClient<Database>
+): Promise<SuperAdminActionResult> {
+  const parsed = deleteAdminSchema.safeParse({
+    adminId: formData.get("adminId"),
+  });
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      message: parsed.error.issues[0]?.message ?? "Input tidak valid.",
+    };
+  }
+
+  await requireSuperAdmin(client);
+
+  try {
+    await deleteAgencyAdminAccount(parsed.data.adminId, client);
+
+    return { success: true, message: "Akun admin berhasil dihapus." };
+  } catch (error) {
+    return {
+      success: false,
+      message:
+        error instanceof Error ? error.message : "Gagal menghapus admin.",
     };
   }
 }

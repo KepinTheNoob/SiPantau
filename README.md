@@ -89,8 +89,9 @@ Kredensial akun demo:
 
 | Role                  | Email                           | Password       |
 | --------------------- | ------------------------------- | -------------- |
-| Super Admin           | `superadmin@transparansi.go.id` | `Password123!` |
-| Admin Instansi (PUPR) | `admin.pupr@transparansi.go.id` | `Password123!` |
+| Super Admin           | `superadmin@sipantau.co.id` | `Password123!` |
+| Admin Instansi (PUPR) | `admin.pupr@sipantau.co.id` | `Password123!` |
+| Admin Instansi (DKI Jakarta) | `admin.dkijakarta@sipantau.co.id` | `Password123!` |
 
 ### 5. Jalankan server pengembangan
 

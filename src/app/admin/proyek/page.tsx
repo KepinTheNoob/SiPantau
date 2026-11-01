@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { requireAdmin } from "@/server/auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { SipantauLogo } from "@/components/sipantau-logo";
 
 export const metadata: Metadata = {
   title: "Daftar Proyek - Panel Admin | SIPANTAU",
@@ -10,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminProjectsPage() {
-  const { profile, agency } = await requireAdmin();
+  const { profile } = await requireAdmin();
 
   const supabase = await createSupabaseServerClient();
 
@@ -24,36 +23,11 @@ export default async function AdminProjectsPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-4">
-            <Link href="/" className="hover:opacity-90 transition">
-              <SipantauLogo size="sm" />
-            </Link>
-            <div className="h-6 w-px bg-slate-200" />
-            <div>
-              <div className="flex items-center gap-2 text-xs text-slate-500">
-                <Link
-                  href="/admin"
-                  className="hover:text-brand-blue hover:underline"
-                >
-                  Dasbor
-                </Link>
-                <span>/</span>
-                <span className="text-slate-800 font-semibold">Proyek</span>
-              </div>
-              <h1 className="mt-0.5 text-lg font-bold tracking-tight text-slate-900 sm:text-xl">
-                Manajemen Proyek
-              </h1>
-              <p className="text-xs text-slate-500">
-                Instansi:{" "}
-                <span className="font-semibold text-slate-700">
-                  {agency?.name}
-                </span>
-              </p>
-            </div>
-          </div>
-
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mb-6 flex items-center justify-between gap-4">
+          <h1 className="text-xl font-bold tracking-tight text-slate-900">
+            Manajemen Proyek
+          </h1>
           <Link
             href="/admin/proyek/baru"
             className="rounded-lg bg-brand-blue px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-brand-blue-hover focus:outline-none focus:ring-2 focus:ring-brand-blue focus:ring-offset-2"
@@ -61,9 +35,7 @@ export default async function AdminProjectsPage() {
             + Buat Proyek Baru
           </Link>
         </div>
-      </header>
 
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         {projectList.length === 0 ? (
           <div className="rounded-xl border border-dashed border-slate-300 bg-white p-12 text-center">
             <h2 className="text-base font-semibold text-slate-900">

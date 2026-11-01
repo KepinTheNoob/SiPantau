@@ -1,8 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { requireAdmin } from "@/server/auth";
-import { logoutAction } from "@/server/actions/auth";
-import { SipantauLogo } from "@/components/sipantau-logo";
 
 export const metadata: Metadata = {
   title: "Panel Admin Instansi - SIPANTAU",
@@ -17,59 +14,6 @@ export default async function AdminDashboardPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-4">
-            <Link href="/" className="hover:opacity-90 transition">
-              <SipantauLogo size="sm" />
-            </Link>
-            <div className="h-6 w-px bg-slate-200" />
-            <div>
-              <h1 className="text-lg font-bold tracking-tight text-slate-900 sm:text-xl">
-                Panel Pengelola Proyek
-              </h1>
-              <p className="text-xs text-slate-500">
-                Instansi:{" "}
-                <span className="font-semibold text-slate-700">
-                  {agencyName}
-                </span>
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <Link
-              href="/admin/proyek"
-              className="text-xs font-semibold text-slate-700 hover:text-brand-blue transition"
-            >
-              Daftar Proyek
-            </Link>
-            <Link
-              href="/admin/riwayat"
-              className="text-xs font-semibold text-slate-700 hover:text-brand-blue transition"
-            >
-              Riwayat Mutasi
-            </Link>
-            {profile.role === "super_admin" && (
-              <Link
-                href="/super-admin"
-                className="text-xs font-semibold text-red-700 hover:text-red-900"
-              >
-                Panel Super Admin
-              </Link>
-            )}
-            <form action={logoutAction}>
-              <button
-                type="submit"
-                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-xs transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-blue"
-              >
-                Keluar
-              </button>
-            </form>
-          </div>
-        </div>
-      </header>
-
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">

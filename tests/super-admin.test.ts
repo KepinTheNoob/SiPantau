@@ -5,6 +5,7 @@ import {
   cleanupTestData,
   type TestUserContext,
 } from "./support/supabase";
+import { listAgencyAdminAccounts } from "@/server/admin-only/accounts";
 import {
   toggleAgencyVerification,
   createAgencyAdminAccount,
@@ -96,6 +97,14 @@ describe("Fase 6: Super Admin & Audit Log Authorization", () => {
 
     const result = await createAgencyAdminAccount(formData, superAdmin.client);
     expect(result.success).toBe(true);
+
+    const adminAccounts = await listAgencyAdminAccounts(superAdmin.client);
+    expect(adminAccounts).toContainEqual(
+      expect.objectContaining({
+        agency_id: agencyAId,
+        email: "new.admin.kelautan@gov.id",
+      })
+    );
 
     // Verify profile is created
     const { data: profile } = await serviceClient

@@ -1,5 +1,171 @@
 import { getAdminServiceClient } from "./client";
+import type { Database } from "@/db/types";
 import { requireSuperAdmin } from "@/server/auth";
+
+export type AgencyAdminAccount = {
+  readonly id: string;
+  readonly agency_id: string | null;
+  readonly created_at: string;
+  readonly email: string | null;
+};
+
+export async function updateAgencyAdminAccount(
+  {
+    adminId,
+    email,
+    agencyId,
+  }: {
+    readonly adminId: string;
+    readonly email: string;
+    readonly agencyId: string;
+  },
+  client?: import("@supabase/supabase-js").SupabaseClient<Database>
+): Promise<void> {
+  await requireSuperAdmin(client);
+
+  const adminClient = getAdminServiceClient();
+
+  const { data: profile, error: profileError } = await adminClient
+    .from("profiles")
+    .select("id, agency_id")
+    .eq("id", adminId)
+    .eq("role", "admin")
+    .maybeSingle();
+
+  if (profileError !== null) {
+    throw new Error(`Gagal memuat data admin: ${profileError.message}`);
+  }
+
+  if (profile === null) {
+    throw new Error("Admin instansi tidak ditemukan.");
+  }
+
+  const { data: authData, error: userError } =
+    await adminClient.auth.admin.getUserById(adminId);
+
+  if (userError !== null || authData.user === null) {
+    throw new Error(
+      userError?.message ?? "Akun autentikasi admin tidak ditemukan."
+    );
+  }
+
+  const { error: profileUpdateError } = await adminClient
+    .from("profiles")
+    .update({ agency_id: agencyId })
+    .eq("id", adminId)
+    .eq("role", "admin");
+
+  if (profileUpdateError !== null) {
+    throw new Error(
+      `Gagal mengubah instansi admin: ${profileUpdateError.message}`
+    );
+  }
+
+  if (authData.user.email !== email) {
+    const { error: emailUpdateError } =
+      await adminClient.auth.admin.updateUserById(adminId, {
+        email,
+        email_confirm: true,
+      });
+
+    if (emailUpdateError !== null) {
+      const { error: rollbackError } = await adminClient
+        .from("profiles")
+        .update({ agency_id: profile.agency_id })
+        .eq("id", adminId)
+        .eq("role", "admin");
+
+      const rollbackMessage =
+        rollbackError === null
+          ? ""
+          : ` Gagal memulihkan instansi sebelumnya: ${rollbackError.message}`;
+
+      throw new Error(`${emailUpdateError.message}${rollbackMessage}`);
+    }
+  }
+}
+
+export async function deleteAgencyAdminAccount(
+  adminId: string,
+  client?: import("@supabase/supabase-js").SupabaseClient<Database>
+): Promise<void> {
+  await requireSuperAdmin(client);
+
+  const adminClient = getAdminServiceClient();
+
+  const { data: profile, error: profileError } = await adminClient
+    .from("profiles")
+    .select("id")
+    .eq("id", adminId)
+    .eq("role", "admin")
+    .maybeSingle();
+
+  if (profileError !== null) {
+    throw new Error(`Gagal memuat data admin: ${profileError.message}`);
+  }
+
+  if (profile === null) {
+    throw new Error("Admin instansi tidak ditemukan.");
+  }
+
+  const { error: deleteError } =
+    await adminClient.auth.admin.deleteUser(adminId);
+
+  if (deleteError !== null) {
+    throw new Error(`Gagal menghapus admin: ${deleteError.message}`);
+  }
+}
+
+export async function listAgencyAdminAccounts(
+  client?: import("@supabase/supabase-js").SupabaseClient<Database>
+): Promise<readonly AgencyAdminAccount[]> {
+  await requireSuperAdmin(client);
+
+  const adminClient = getAdminServiceClient();
+
+  const { data: profiles, error: profilesError } = await adminClient
+    .from("profiles")
+    .select("id, agency_id, created_at")
+    .eq("role", "admin")
+    .order("created_at", { ascending: false });
+
+  if (profilesError !== null) {
+    throw new Error(`Gagal memuat daftar admin: ${profilesError.message}`);
+  }
+
+  if (profiles.length === 0) {
+    return [];
+  }
+
+  const usersById = new Map<string, string | null>();
+  const perPage = 1000;
+
+  for (let page = 1; ; page += 1) {
+    const { data, error } = await adminClient.auth.admin.listUsers({
+      page,
+      perPage,
+    });
+
+    if (error !== null) {
+      throw new Error(`Gagal memuat email admin: ${error.message}`);
+    }
+
+    for (const user of data.users) {
+      if (user.email !== undefined) {
+        usersById.set(user.id, user.email);
+      }
+    }
+
+    if (data.users.length < perPage) {
+      break;
+    }
+  }
+
+  return profiles.map((profile) => ({
+    ...profile,
+    email: usersById.get(profile.id) ?? null,
+  }));
+}
 
 export async function createAgencyAdminUser(
   {

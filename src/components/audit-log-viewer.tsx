@@ -1,14 +1,46 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import type { Database } from "@/db/types";
 
 type AuditLogRow = Database["public"]["Tables"]["audit_logs"]["Row"];
 
+function getPageHref(
+  page: number,
+  agencyId: string | undefined,
+  action: string | undefined,
+  basePath: string
+) {
+  const params = new URLSearchParams();
+
+  if (agencyId) {
+    params.set("agencyId", agencyId);
+  }
+
+  if (action) {
+    params.set("action", action);
+  }
+
+  params.set("page", String(page));
+
+  return `${basePath}?${params.toString()}`;
+}
+
 export function AuditLogViewer({
   logs,
+  currentPage,
+  totalPages,
+  agencyId,
+  action,
+  basePath = "/super-admin",
 }: {
   readonly logs: readonly AuditLogRow[];
+  readonly currentPage?: number;
+  readonly totalPages?: number;
+  readonly agencyId?: string;
+  readonly action?: string;
+  readonly basePath?: string;
 }) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -97,6 +129,55 @@ export function AuditLogViewer({
           </tbody>
         </table>
       </div>
+
+      {currentPage !== undefined &&
+        totalPages !== undefined &&
+        totalPages > 1 && (
+          <nav
+            aria-label="Pagination audit log"
+            className="flex items-center justify-between border-t border-slate-200 px-4 py-3"
+          >
+            <span className="text-xs text-slate-600">
+              Halaman {currentPage} dari {totalPages}
+            </span>
+            <div className="flex gap-2">
+              {currentPage > 1 ? (
+                <Link
+                  href={getPageHref(
+                    currentPage - 1,
+                    agencyId,
+                    action,
+                    basePath
+                  )}
+                  className="rounded border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  Sebelumnya
+                </Link>
+              ) : (
+                <span className="rounded border border-slate-200 px-3 py-1.5 text-xs text-slate-400">
+                  Sebelumnya
+                </span>
+              )}
+              {currentPage < totalPages ? (
+                <Link
+                  href={getPageHref(
+                    currentPage + 1,
+                    agencyId,
+                    action,
+                    basePath
+                  )}
+                  className="rounded border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  Berikutnya
+                </Link>
+              ) : (
+                <span className="rounded border border-slate-200 px-3 py-1.5 text-xs text-slate-400">
+                  Berikutnya
+                </span>
+              )}
+            </div>
+          </nav>
+        )}
 
       {expandedId !== null && (
         <div className="border-t border-slate-200 bg-slate-900 p-4 text-xs text-slate-100 font-mono">

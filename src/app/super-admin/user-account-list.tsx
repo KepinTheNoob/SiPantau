@@ -1,18 +1,87 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import type { Database } from "@/db/types";
 import type { UserAccountItem } from "@/server/admin-only/accounts";
+import {
+  deleteAgencyAdmin,
+  updateAgencyAdmin,
+} from "@/server/actions/super-admin";
 
 type RoleFilter = "all" | "admin" | "super_admin";
 
+type AgencyRow = Database["public"]["Tables"]["agencies"]["Row"];
+
 export function UserAccountList({
   accounts,
+  agencies,
 }: {
   readonly accounts: readonly UserAccountItem[];
+  readonly agencies: readonly AgencyRow[];
 }) {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [searchQuery, setSearchQuery] = useState("");
-
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
+  const [editingAdminId, setEditingAdminId] = useState<string | null>(null);
+  const [editingEmail, setEditingEmail] = useState("");
+  const [editingAgencyId, setEditingAgencyId] = useState("");
+
+  const [message, setMessage] = useState<{
+    readonly success: boolean;
+    readonly text: string;
+  } | null>(null);
+
+  const handleUpdate = (adminId: string) => {
+    const formData = new FormData();
+    formData.set("adminId", adminId);
+    formData.set("email", editingEmail);
+    formData.set("agencyId", editingAgencyId);
+    setMessage(null);
+
+    startTransition(async () => {
+      const result = await updateAgencyAdmin(formData);
+      setMessage({
+        success: result.success,
+        text: result.message ?? "Proses selesai.",
+      });
+
+      if (result.success) {
+        setEditingAdminId(null);
+        setEditingEmail("");
+        setEditingAgencyId("");
+        router.refresh();
+      }
+    });
+  };
+
+  const handleDelete = (adminId: string, email: string) => {
+    if (
+      !window.confirm(
+        `Hapus akun admin ${email}? Akun ini tidak dapat digunakan untuk login lagi.`
+      )
+    ) {
+      return;
+    }
+
+    const formData = new FormData();
+    formData.set("adminId", adminId);
+    setMessage(null);
+
+    startTransition(async () => {
+      const result = await deleteAgencyAdmin(formData);
+      setMessage({
+        success: result.success,
+        text: result.message ?? "Proses selesai.",
+      });
+
+      if (result.success) {
+        setEditingAdminId(null);
+        router.refresh();
+      }
+    });
+  };
 
   const filteredAccounts = useMemo(() => {
     const query = searchQuery.trim().toLowerCase();
@@ -76,11 +145,24 @@ export function UserAccountList({
 
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+      {message !== null && (
+        <div
+          role={message.success ? "status" : "alert"}
+          className={`rounded border p-3 text-xs ${
+            message.success
+              ? "border-emerald-300 bg-emerald-50 text-emerald-800"
+              : "border-red-300 bg-red-50 text-red-800"
+          }`}
+        >
+          {message.text}
+        </div>
+      )}
+
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-base font-bold text-slate-900">
-              Daftar Akun & Email Terdaftar
+              Daftar Akun Admin
             </h3>
             <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700 border border-slate-200">
               Total: {accounts.length}
@@ -213,11 +295,18 @@ export function UserAccountList({
                   <th scope="col" className="px-4 py-3 whitespace-nowrap">
                     Terdaftar Sejak
                   </th>
+                  <th
+                    scope="col"
+                    className="px-4 py-3 whitespace-nowrap text-right"
+                  >
+                    Tindakan
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
                 {filteredAccounts.map((acc) => {
                   const initial = (acc.email[0] ?? "U").toUpperCase();
+                  const isEditing = editingAdminId === acc.id;
 
                   return (
                     <tr key={acc.id} className="hover:bg-slate-50 transition">
@@ -227,9 +316,24 @@ export function UserAccountList({
                             {initial}
                           </div>
                           <div>
-                            <div className="font-semibold text-slate-900">
-                              {acc.email}
-                            </div>
+                            {isEditing ? (
+                              <label className="block">
+                                <span className="sr-only">Email admin</span>
+                                <input
+                                  type="email"
+                                  required
+                                  value={editingEmail}
+                                  onChange={(event) =>
+                                    setEditingEmail(event.currentTarget.value)
+                                  }
+                                  className="w-full rounded border border-slate-300 px-2 py-1 font-medium text-slate-900"
+                                />
+                              </label>
+                            ) : (
+                              <div className="font-semibold text-slate-900">
+                                {acc.email}
+                              </div>
+                            )}
                             <div className="font-mono text-[10px] text-slate-400">
                               ID: {acc.id.slice(0, 8)}...
                             </div>
@@ -254,7 +358,28 @@ export function UserAccountList({
                       </td>
 
                       <td className="px-4 py-3 whitespace-nowrap">
-                        {acc.agencyName !== null ? (
+                        {acc.role === "admin" && isEditing ? (
+                          <label className="block">
+                            <span className="sr-only">Instansi admin</span>
+                            <select
+                              required
+                              value={editingAgencyId}
+                              onChange={(event) =>
+                                setEditingAgencyId(event.currentTarget.value)
+                              }
+                              className="w-full rounded border border-slate-300 bg-white px-2 py-1"
+                            >
+                              <option value="" disabled>
+                                Pilih instansi
+                              </option>
+                              {agencies.map((agency) => (
+                                <option key={agency.id} value={agency.id}>
+                                  {agency.name}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                        ) : acc.agencyName !== null ? (
                           <div>
                             <div className="font-medium text-slate-800">
                               {acc.agencyName}
@@ -288,6 +413,57 @@ export function UserAccountList({
 
                       <td className="px-4 py-3 whitespace-nowrap font-mono text-[11px] text-slate-600">
                         {formatDateTime(acc.createdAt)}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-right">
+                        {acc.role === "admin" &&
+                          (isEditing ? (
+                            <div className="flex justify-end gap-2">
+                              <button
+                                type="button"
+                                disabled={isPending}
+                                onClick={() => handleUpdate(acc.id)}
+                                className="rounded bg-brand-blue px-2.5 py-1 font-semibold text-white hover:bg-brand-blue-hover disabled:opacity-50"
+                              >
+                                Simpan
+                              </button>
+                              <button
+                                type="button"
+                                disabled={isPending}
+                                onClick={() => {
+                                  setEditingAdminId(null);
+                                  setEditingEmail("");
+                                  setEditingAgencyId("");
+                                }}
+                                className="rounded border border-slate-300 px-2.5 py-1 text-slate-700 hover:bg-slate-100"
+                              >
+                                Batal
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex justify-end gap-2">
+                              <button
+                                type="button"
+                                disabled={isPending}
+                                onClick={() => {
+                                  setMessage(null);
+                                  setEditingAdminId(acc.id);
+                                  setEditingEmail(acc.email);
+                                  setEditingAgencyId(acc.agencyId ?? "");
+                                }}
+                                className="rounded border border-slate-300 px-2.5 py-1 text-slate-700 hover:bg-slate-100 disabled:opacity-50"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                type="button"
+                                disabled={isPending}
+                                onClick={() => handleDelete(acc.id, acc.email)}
+                                className="rounded border border-red-300 px-2.5 py-1 font-semibold text-red-700 hover:bg-red-50 disabled:opacity-50"
+                              >
+                                Hapus
+                              </button>
+                            </div>
+                          ))}
                       </td>
                     </tr>
                   );
