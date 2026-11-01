@@ -28,7 +28,8 @@ export function CitizenReportSection({
     event.preventDefault();
     setResultMessage(null);
 
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     formData.append("projectId", projectId);
 
     startTransition(async () => {
@@ -40,7 +41,7 @@ export function CitizenReportSection({
       });
 
       if (result.success) {
-        event.currentTarget.reset();
+        form.reset();
         setShowForm(false);
         router.refresh();
       }
