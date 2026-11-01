@@ -246,7 +246,7 @@ async function main() {
   console.log("-> Menyiapkan akun super admin & admin instansi...");
 
   const superAdminId = await findOrCreateUser(
-    "superadmin@transparansi.go.id",
+    "superadmin@sipantau.co.id",
     "Password123!"
   );
 
@@ -257,7 +257,7 @@ async function main() {
   });
 
   const agencyAdminId = await findOrCreateUser(
-    "admin.pupr@transparansi.go.id",
+    "admin.pupr@sipantau.co.id",
     "Password123!"
   );
 
@@ -740,12 +740,12 @@ async function main() {
   console.log("--------------------------------------------------");
   console.log("Kredensial Demo:");
   console.log("1. Super Admin:");
-  console.log("   Email   : superadmin@transparansi.go.id");
+  console.log("   Email   : superadmin@sipantau.co.id");
   console.log("   Password: Password123!");
   console.log("   URL     : http://localhost:3000/super-admin");
   console.log("");
   console.log("2. Admin Instansi (Dinas PUPR):");
-  console.log("   Email   : admin.pupr@transparansi.go.id");
+  console.log("   Email   : admin.pupr@sipantau.co.id");
   console.log("   Password: Password123!");
   console.log("   URL     : http://localhost:3000/admin");
   console.log("");
