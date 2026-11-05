@@ -11,9 +11,11 @@ type CitizenReportRow = Database["public"]["Tables"]["citizen_reports"]["Row"];
 export function CitizenReportSection({
   projectId,
   approvedReports,
+  allowSubmission,
 }: {
   readonly projectId: string;
   readonly approvedReports: readonly CitizenReportRow[];
+  readonly allowSubmission: boolean;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -63,13 +65,15 @@ export function CitizenReportSection({
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setShowForm((prev) => !prev)}
-          className="rounded-lg bg-brand-blue px-3.5 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-brand-blue-hover focus:outline-none focus:ring-2 focus:ring-brand-blue"
-        >
-          {showForm ? "Tutup Form Laporan" : "📣 Buat Laporan Warga"}
-        </button>
+        {allowSubmission && (
+          <button
+            type="button"
+            onClick={() => setShowForm((prev) => !prev)}
+            className="rounded-lg bg-brand-blue px-3.5 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-brand-blue-hover focus:outline-none focus:ring-2 focus:ring-brand-blue"
+          >
+            {showForm ? "Tutup Form Laporan" : "📣 Buat Laporan Warga"}
+          </button>
+        )}
       </div>
 
       {resultMessage !== null && (
@@ -157,8 +161,7 @@ export function CitizenReportSection({
 
       {approvedReports.length === 0 ? (
         <div className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center text-xs text-slate-500">
-          Belum ada laporan warga terverifikasi untuk proyek ini. Jadilah yang
-          pertama mengirimkan laporan pengamatan!
+          Belum ada laporan warga untuk proyek ini.
         </div>
       ) : (
         <div className="space-y-4">

@@ -8,6 +8,7 @@ import { requireAgencyAccess } from "@/server/auth";
 import {
   landmarkFormSchema,
   updateLandmarkSchema,
+  deleteLandmarkSchema,
   reorderLandmarksSchema,
   toggleLandmarkDoneSchema,
 } from "@/lib/validation/landmarks";
@@ -129,6 +130,85 @@ export async function updateLandmark(
     success: true,
     message: "Tahapan berhasil diperbarui.",
     landmarkId: data.landmarkId,
+  };
+}
+
+export async function deleteLandmark(
+  formData: FormData,
+  client?: SupabaseClient<Database>
+): Promise<LandmarkActionResult> {
+  const parsed = deleteLandmarkSchema.safeParse({
+    landmarkId: formData.get("landmarkId"),
+    projectId: formData.get("projectId"),
+  });
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      message: parsed.error.issues[0]?.message ?? "Data tahapan tidak valid.",
+    };
+  }
+
+  const { projectId, landmarkId } = parsed.data;
+  await requireAgencyAccess(projectId, client);
+
+  const supabase = client ?? (await createSupabaseServerClient());
+
+  const { data: landmark, error: landmarkError } = await supabase
+    .from("landmarks")
+    .select("id, evidence_path")
+    .eq("id", landmarkId)
+    .eq("project_id", projectId)
+    .maybeSingle();
+
+  if (landmarkError !== null) {
+    return {
+      success: false,
+      message: `Gagal memuat tahapan proyek: ${landmarkError.message}`,
+    };
+  }
+
+  if (landmark === null) {
+    return {
+      success: false,
+      message: "Tahapan tidak ditemukan pada proyek ini.",
+    };
+  }
+
+  const { data: deletedLandmark, error: deleteError } = await supabase
+    .from("landmarks")
+    .delete()
+    .eq("id", landmarkId)
+    .eq("project_id", projectId)
+    .select("id")
+    .maybeSingle();
+
+  if (deleteError !== null || deletedLandmark === null) {
+    return {
+      success: false,
+      message:
+        deleteError?.message ?? "Tahapan tidak dapat dihapus dari proyek ini.",
+    };
+  }
+
+  if (landmark.evidence_path !== null) {
+    const { error: storageError } = await supabase.storage
+      .from("evidence")
+      .remove([landmark.evidence_path]);
+
+    if (storageError !== null) {
+      return {
+        success: true,
+        message: `Tahapan berhasil dihapus, tetapi berkas buktinya gagal dihapus: ${storageError.message}`,
+        landmarkId,
+      };
+    }
+  }
+
+  return {
+    success: true,
+    message: "Tahapan berhasil dihapus.",
+    landmarkId,
   };
 }
 

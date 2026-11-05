@@ -10,7 +10,7 @@ import {
   updateProject,
   archiveProject,
 } from "@/server/actions/projects";
-import { addLandmark } from "@/server/actions/landmarks";
+import { addLandmark, deleteLandmark } from "@/server/actions/landmarks";
 import { AgencyAccessDeniedError } from "@/server/auth/errors";
 
 describe("Fase 3: Project and Landmark CRUD & Authorization", () => {
@@ -228,6 +228,59 @@ describe("Fase 3: Project and Landmark CRUD & Authorization", () => {
     formB.append("weight", "50");
 
     await expect(addLandmark(formB, adminA.client)).rejects.toThrow(
+      AgencyAccessDeniedError
+    );
+  });
+
+  it("admin A can delete a landmark on their project and cannot delete one from project B", async () => {
+    const { data: landmarkA, error: insertErrorA } = await serviceClient
+      .from("landmarks")
+      .insert({
+        project_id: projectAId,
+        name: "Tahapan yang akan dihapus",
+        position: 0,
+        weight: 20,
+      })
+      .select("id")
+      .single();
+
+    expect(insertErrorA).toBeNull();
+    expect(landmarkA).not.toBeNull();
+
+    const formA = new FormData();
+    formA.append("projectId", projectAId);
+    formA.append("landmarkId", landmarkA?.id ?? "");
+
+    const resultA = await deleteLandmark(formA, adminA.client);
+    expect(resultA.success).toBe(true);
+
+    const { data: deletedLandmark } = await serviceClient
+      .from("landmarks")
+      .select("id")
+      .eq("id", landmarkA?.id ?? "")
+      .maybeSingle();
+
+    expect(deletedLandmark).toBeNull();
+
+    const { data: landmarkB, error: insertErrorB } = await serviceClient
+      .from("landmarks")
+      .insert({
+        project_id: projectBId,
+        name: "Tahapan milik instansi lain",
+        position: 0,
+        weight: 20,
+      })
+      .select("id")
+      .single();
+
+    expect(insertErrorB).toBeNull();
+    expect(landmarkB).not.toBeNull();
+
+    const formB = new FormData();
+    formB.append("projectId", projectBId);
+    formB.append("landmarkId", landmarkB?.id ?? "");
+
+    await expect(deleteLandmark(formB, adminA.client)).rejects.toThrow(
       AgencyAccessDeniedError
     );
   });

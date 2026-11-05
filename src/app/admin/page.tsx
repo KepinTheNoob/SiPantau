@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { requireAdmin } from "@/server/auth";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { ProjectCompletionSummary } from "@/components/project-completion-summary";
 
 export const metadata: Metadata = {
   title: "Panel Admin Instansi - SIPANTAU",
@@ -8,6 +10,28 @@ export const metadata: Metadata = {
 
 export default async function AdminDashboardPage() {
   const { user, profile, agency } = await requireAdmin();
+  const supabase = await createSupabaseServerClient();
+
+  const projectStatsResult =
+    profile.agency_id === null
+      ? { data: [], error: null }
+      : await supabase
+          .from("project_stats")
+          .select("archived_at, status_waktu")
+          .eq("agency_id", profile.agency_id)
+          .is("archived_at", null);
+
+  if (projectStatsResult.error !== null) {
+    throw new Error(
+      `Gagal memuat ringkasan proyek: ${projectStatsResult.error.message}`
+    );
+  }
+
+  const projects = projectStatsResult.data ?? [];
+
+  const completedProjects = projects.filter(
+    (project) => project.status_waktu === "selesai"
+  ).length;
 
   const agencyName = agency?.name ?? "Tidak terafiliasi dengan instansi";
   const isVerified = agency?.verified === true;
@@ -65,6 +89,13 @@ export default async function AdminDashboardPage() {
               {agency?.region ?? "-"}
             </p>
           </section>
+        </div>
+
+        <div className="mt-6">
+          <ProjectCompletionSummary
+            completed={completedProjects}
+            total={projects.length}
+          />
         </div>
       </main>
     </div>

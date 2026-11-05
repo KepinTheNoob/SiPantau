@@ -8,6 +8,7 @@ import { SipantauLogo } from "@/components/sipantau-logo";
 type PanelNavbarProps = {
   readonly role: "admin" | "super_admin";
   readonly agencyName: string | null;
+  readonly isProjectDetail?: boolean;
 };
 
 const ADMIN_ITEMS = [
@@ -22,7 +23,11 @@ const SUPER_ADMIN_ITEMS = [
   { href: "/super-admin", label: "Dashboard" },
 ] as const;
 
-export function PanelNavbar({ role, agencyName }: PanelNavbarProps) {
+export function PanelNavbar({
+  role,
+  agencyName,
+  isProjectDetail = false,
+}: PanelNavbarProps) {
   const pathname = usePathname();
   const isSuperAdmin = role === "super_admin";
   const items = isSuperAdmin ? SUPER_ADMIN_ITEMS : ADMIN_ITEMS;
@@ -57,7 +62,8 @@ export function PanelNavbar({ role, agencyName }: PanelNavbarProps) {
                 pathname === item.href ||
                 (item.href !== "/admin" &&
                   item.href !== "/super-admin" &&
-                  pathname.startsWith(`${item.href}/`));
+                  pathname.startsWith(`${item.href}/`)) ||
+                (isProjectDetail && item.href.endsWith("/proyek"));
 
               return (
                 <Link

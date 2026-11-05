@@ -5,6 +5,10 @@ import { listUserAccounts } from "@/server/admin-only/accounts";
 import { AgencyManager } from "./agency-manager";
 import { CreateAdminForm } from "./create-admin-form";
 import { UserAccountList } from "./user-account-list";
+import {
+  ProjectCompletionSummary,
+  type RegionProjectSummary,
+} from "@/components/project-completion-summary";
 
 export const metadata: Metadata = {
   title: "Dashboard Super Admin - SIPANTAU",
@@ -16,9 +20,13 @@ export default async function SuperAdminDashboardPage() {
   const { user, profile, agency } = await requireSuperAdmin();
   const supabase = await createSupabaseServerClient();
 
-  const [userAccounts, agenciesResult] = await Promise.all([
+  const [userAccounts, agenciesResult, projectStatsResult] = await Promise.all([
     listUserAccounts(supabase),
     supabase.from("agencies").select("*").order("name", { ascending: true }),
+    supabase
+      .from("project_stats")
+      .select("agency_id, archived_at, status_waktu")
+      .is("archived_at", null),
   ]);
 
   if (agenciesResult.error !== null) {
@@ -28,6 +36,63 @@ export default async function SuperAdminDashboardPage() {
   }
 
   const agencies = agenciesResult.data;
+
+  if (projectStatsResult.error !== null) {
+    throw new Error(
+      `Gagal memuat ringkasan proyek: ${projectStatsResult.error.message}`
+    );
+  }
+
+  const projects = projectStatsResult.data ?? [];
+
+  const completedProjects = projects.filter(
+    (project) => project.status_waktu === "selesai"
+  ).length;
+
+  const projectCountsByAgency = new Map<
+    string,
+    { total: number; completed: number }
+  >();
+
+  for (const project of projects) {
+    const counts = projectCountsByAgency.get(project.agency_id) ?? {
+      total: 0,
+      completed: 0,
+    };
+
+    counts.total += 1;
+
+    if (project.status_waktu === "selesai") {
+      counts.completed += 1;
+    }
+
+    projectCountsByAgency.set(project.agency_id, counts);
+  }
+
+  const projectsByRegion = new Map<string, RegionProjectSummary>();
+
+  for (const item of agencies) {
+    const counts = projectCountsByAgency.get(item.id) ?? {
+      total: 0,
+      completed: 0,
+    };
+
+    const regionSummary = projectsByRegion.get(item.region) ?? {
+      region: item.region,
+      total: 0,
+      completed: 0,
+    };
+
+    projectsByRegion.set(item.region, {
+      region: item.region,
+      total: regionSummary.total + counts.total,
+      completed: regionSummary.completed + counts.completed,
+    });
+  }
+
+  const regionSummaries = Array.from(projectsByRegion.values()).sort((a, b) =>
+    a.region.localeCompare(b.region, "id")
+  );
 
   return (
     <div className="min-h-screen bg-slate-50 pb-16 text-slate-900">
@@ -73,6 +138,12 @@ export default async function SuperAdminDashboardPage() {
             </p>
           </div>
         </section>
+
+        <ProjectCompletionSummary
+          completed={completedProjects}
+          total={projects.length}
+          regions={regionSummaries}
+        />
 
         <section className="flex flex-col gap-4">
           <h2 className="text-lg font-bold text-slate-900">

@@ -111,7 +111,37 @@ export async function loginAction(
     }
   }
 
-  redirect("/admin");
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", signInData.user.id)
+    .maybeSingle();
+
+  if (profileError !== null || profile === null) {
+    await supabase.auth.signOut();
+
+    return {
+      success: false,
+      message:
+        profileError?.message ??
+        "Profil akun tidak ditemukan. Hubungi Super Admin.",
+    };
+  }
+
+  if (profile.role === "super_admin") {
+    redirect("/super-admin");
+  }
+
+  if (profile.role === "admin") {
+    redirect("/admin");
+  }
+
+  await supabase.auth.signOut();
+
+  return {
+    success: false,
+    message: "Akun tidak memiliki peran pengelola yang valid.",
+  };
 }
 
 export async function logoutAction(): Promise<void> {

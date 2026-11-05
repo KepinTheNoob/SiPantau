@@ -10,6 +10,8 @@ import { ProjectMap } from "@/components/project-map";
 import { CitizenReportSection } from "@/components/citizen-report-section";
 import { SipantauLogo } from "@/components/sipantau-logo";
 import { PublicHeader } from "@/components/public-header";
+import { PanelNavbar } from "@/components/panel-navbar";
+import { getCurrentUser } from "@/server/auth";
 
 export async function generateMetadata({
   params,
@@ -51,6 +53,7 @@ export default async function ProjectDetailPage({
 }) {
   const { slug } = await params;
   const supabase = await createSupabaseServerClient();
+  const currentUser = await getCurrentUser(supabase);
 
   const { data: project } = await supabase
     .from("projects")
@@ -67,6 +70,13 @@ export default async function ProjectDetailPage({
   if (agency === null) {
     notFound();
   }
+
+  const panelRole =
+    currentUser?.profile.role === "admin"
+      ? "admin"
+      : currentUser?.profile.role === "super_admin"
+        ? "super_admin"
+        : null;
 
   const { data: landmarksData } = await supabase
     .from("landmarks")
@@ -108,7 +118,15 @@ export default async function ProjectDetailPage({
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between">
       <div>
-        <PublicHeader active={null} containerClassName="max-w-5xl" />
+        {panelRole !== null ? (
+          <PanelNavbar
+            role={panelRole}
+            agencyName={currentUser?.agency?.name ?? null}
+            isProjectDetail
+          />
+        ) : (
+          <PublicHeader active={null} containerClassName="max-w-5xl" />
+        )}
 
         <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 flex flex-col gap-8">
           <div className="flex items-center gap-2 text-sm text-slate-500">
@@ -328,6 +346,7 @@ export default async function ProjectDetailPage({
             <CitizenReportSection
               projectId={project.id}
               approvedReports={approvedReports}
+              allowSubmission={panelRole === null}
             />
           </section>
         </main>

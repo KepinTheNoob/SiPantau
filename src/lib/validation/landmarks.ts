@@ -21,6 +21,11 @@ export const updateLandmarkSchema = landmarkFormSchema.extend({
   landmarkId: z.string().uuid("ID landmark tidak valid."),
 });
 
+export const deleteLandmarkSchema = z.object({
+  projectId: z.string().uuid("ID proyek tidak valid."),
+  landmarkId: z.string().uuid("ID landmark tidak valid."),
+});
+
 export const toggleLandmarkDoneSchema = z.object({
   projectId: z.string().uuid("ID proyek tidak valid."),
   landmarkId: z.string().uuid("ID landmark tidak valid."),
