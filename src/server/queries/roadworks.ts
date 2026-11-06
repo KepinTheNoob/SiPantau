@@ -29,7 +29,7 @@ function daysBetween(fromIsoDate: string, toIsoDate: string): number {
 }
 
 /**
- * Proyek PantauJalanan yang punya titik koordinat.
+ * Proyek PantauSekitar yang punya titik koordinat.
  * Acara penutupan jalan yang sudah lewat tanggalnya tidak ditampilkan karena jalannya sudah dibuka.
  */
 export async function getRoadworkProjects(): Promise<RoadworkLoadResult> {

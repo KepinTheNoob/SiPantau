@@ -103,6 +103,10 @@ export default async function ProjectDetailPage({
 
   const approvedReports = reportsData ?? [];
 
+  const {
+    data: { user: signedInUser },
+  } = await supabase.auth.getUser();
+
   const progressPercent = hitungProgres(landmarks);
   const spentTotal = expenses.reduce((acc, curr) => acc + curr.amount, 0);
   const budgetTotal = project.budget_total;
@@ -347,6 +351,7 @@ export default async function ProjectDetailPage({
               projectId={project.id}
               approvedReports={approvedReports}
               allowSubmission={panelRole === null}
+              signedInEmail={signedInUser?.email ?? null}
             />
           </section>
         </main>

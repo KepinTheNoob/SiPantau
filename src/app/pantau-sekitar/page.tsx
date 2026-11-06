@@ -6,24 +6,25 @@ import { ROAD_CATEGORIES } from "@/lib/project-categories";
 import { getRoadworkProjects } from "@/server/queries/roadworks";
 
 export const metadata: Metadata = {
-  title: "PantauJalan - Proyek dan Penutupan Jalan di Sekitar Anda | SIPANTAU",
+  title:
+    "PantauSekitar - Proyek dan Penutupan Jalan di Sekitar Anda | SIPANTAU",
   description:
     "Lacak perbaikan jalan, pembangunan jalan dan jembatan, galian kabel bawah tanah, serta acara yang menutup jalan, lengkap dengan progres dan deadline-nya.",
 };
 
-export default async function PantauJalanPage() {
+export default async function PantauSekitarPage() {
   const roadworks = await getRoadworkProjects();
 
   return (
     <div className="flex min-h-screen flex-col justify-between bg-slate-50 text-slate-900">
       <div>
-        <PublicHeader active="pantau-jalan" containerClassName="max-w-7xl" />
+        <PublicHeader active="pantau-sekitar" containerClassName="max-w-7xl" />
 
         <section className="border-b border-slate-200 bg-white py-10 sm:py-12">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl">
               <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-                PantauJalan
+                PantauSekitar
               </h1>
               <p className="mt-3 text-base leading-relaxed text-slate-600 sm:text-lg">
                 Sebelum berangkat, cek jalan mana yang sedang dikerjakan atau

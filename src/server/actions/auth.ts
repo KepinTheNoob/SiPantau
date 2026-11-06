@@ -124,7 +124,7 @@ export async function loginAction(
       success: false,
       message:
         profileError?.message ??
-        "Profil akun tidak ditemukan. Hubungi Super Admin.",
+        "Akun ini bukan akun pengelola instansi. Warga cukup masuk dari halaman proyek saat membuat laporan.",
     };
   }
 

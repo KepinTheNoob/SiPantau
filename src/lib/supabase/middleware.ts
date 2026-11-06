@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "@/db/types";
 import { getSupabaseAnonKey, getSupabaseUrl } from "./env";
+import { panelHomeForRole } from "@/lib/panel-routes";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -67,16 +68,26 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  // If already logged in and visiting /masuk
+  // Pengelola yang sudah login dan membuka /masuk diarahkan ke panelnya.
+  // Akun warga (tanpa profil) tetap boleh melihat halaman /masuk.
   if (
     pathname === "/masuk" &&
     user !== null &&
     !request.nextUrl.searchParams.has("mfa")
   ) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/admin";
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
 
-    return NextResponse.redirect(url);
+    if (profile !== null) {
+      const url = request.nextUrl.clone();
+      url.pathname = panelHomeForRole(profile.role);
+      url.search = "";
+
+      return NextResponse.redirect(url);
+    }
   }
 
   return supabaseResponse;

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { SipantauLogo } from "@/components/sipantau-logo";
 
-export type PublicNavSection = "proyek" | "pantau-jalan";
+export type PublicNavSection = "proyek" | "pantau-sekitar";
 
 const NAV_ITEMS: readonly {
   readonly section: PublicNavSection;
@@ -9,7 +9,11 @@ const NAV_ITEMS: readonly {
   readonly label: string;
 }[] = [
   { section: "proyek", href: "/", label: "Proyek" },
-  { section: "pantau-jalan", href: "/pantau-jalan", label: "PantauJalan" },
+  {
+    section: "pantau-sekitar",
+    href: "/pantau-sekitar",
+    label: "PantauSekitar",
+  },
 ];
 
 /** Header halaman publik. `active` menandai menu halaman saat ini; null untuk halaman detail. */

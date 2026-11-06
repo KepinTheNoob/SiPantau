@@ -6,6 +6,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { requireAdmin, requireAgencyAccess } from "@/server/auth";
 import { ForbiddenError, UnverifiedAgencyError } from "@/server/auth/errors";
 import {
+  initialLandmarksSchema,
   projectFormSchema,
   updateProjectSchema,
   archiveProjectSchema,
@@ -22,6 +23,17 @@ export type ProjectActionResult = {
   readonly projectId?: string;
   readonly fieldErrors?: readonly FieldError[];
 };
+
+/** Menggabungkan field `landmark_name[]` dan `landmark_weight[]` dari form menjadi daftar tahapan. */
+function readInitialLandmarks(formData: FormData): readonly {
+  readonly name: FormDataEntryValue;
+  readonly weight: FormDataEntryValue;
+}[] {
+  const names = formData.getAll("landmark_name");
+  const weights = formData.getAll("landmark_weight");
+
+  return names.map((name, index) => ({ name, weight: weights[index] ?? "" }));
+}
 
 export async function createProject(
   formData: FormData,
@@ -40,11 +52,27 @@ export async function createProject(
     lng: formData.get("lng") || null,
   });
 
-  if (!parsed.success) {
-    const fieldErrors = parsed.error.issues.map((issue) => ({
-      field: issue.path.join("."),
-      message: issue.message,
-    }));
+  const parsedLandmarks = initialLandmarksSchema.safeParse(
+    readInitialLandmarks(formData)
+  );
+
+  if (!parsed.success || !parsedLandmarks.success) {
+    const projectIssues = parsed.success ? [] : parsed.error.issues;
+
+    const landmarkIssues = parsedLandmarks.success
+      ? []
+      : parsedLandmarks.error.issues;
+
+    const fieldErrors = [
+      ...projectIssues.map((issue) => ({
+        field: issue.path.join("."),
+        message: issue.message,
+      })),
+      ...landmarkIssues.map((issue) => ({
+        field: ["landmarks", ...issue.path].join("."),
+        message: issue.message,
+      })),
+    ];
 
     return {
       success: false,
@@ -96,6 +124,25 @@ export async function createProject(
         insertError?.message.includes("slug")
           ? "Slug proyek sudah digunakan. Silakan gunakan slug lain."
           : (insertError?.message ?? "Gagal menyimpan proyek baru."),
+    };
+  }
+
+  const { error: landmarksError } = await supabase.from("landmarks").insert(
+    parsedLandmarks.data.map((landmark, index) => ({
+      project_id: newProject.id,
+      name: landmark.name,
+      weight: landmark.weight,
+      position: index + 1,
+    }))
+  );
+
+  // Proyek tanpa tahapan tidak boleh tersimpan: batalkan proyek bila tahapan gagal disimpan.
+  if (landmarksError !== null) {
+    await supabase.from("projects").delete().eq("id", newProject.id);
+
+    return {
+      success: false,
+      message: `Gagal menyimpan tahapan proyek, proyek tidak dibuat: ${landmarksError.message}`,
     };
   }
 

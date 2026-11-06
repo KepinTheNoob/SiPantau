@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { createProject, type FieldError } from "@/server/actions/projects";
 import { ProjectCategorySelect } from "@/components/project-category-select";
+import { InitialLandmarksFields } from "./initial-landmarks-fields";
 
 export function ProjectCreateForm() {
   const router = useRouter();
@@ -255,6 +256,8 @@ export function ProjectCreateForm() {
           />
         </div>
       </div>
+
+      <InitialLandmarksFields getFieldError={getFieldError} />
 
       <div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-5">
         <button

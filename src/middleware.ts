@@ -6,5 +6,6 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/super-admin/:path*", "/masuk"],
+  // /proyek ikut dilewatkan supaya sesi login warga (untuk laporan warga) tetap diperbarui.
+  matcher: ["/admin/:path*", "/super-admin/:path*", "/masuk", "/proyek/:path*"],
 };

@@ -491,8 +491,8 @@ async function main() {
     },
   ]);
 
-  // 6. Data demo PantauJalan (DKI Jakarta), mencakup semua kategori jalan
-  console.log("-> Menyiapkan data demo PantauJalan (DKI Jakarta)...");
+  // 6. Data demo PantauSekitar (DKI Jakarta), mencakup semua kategori jalan
+  console.log("-> Menyiapkan data demo PantauSekitar (DKI Jakarta)...");
 
   const { data: agencyBinaMarga, error: errBinaMarga } = await client
     .from("agencies")
@@ -749,8 +749,8 @@ async function main() {
   console.log("   Password: Password123!");
   console.log("   URL     : http://localhost:3000/admin");
   console.log("");
-  console.log("PantauJalan (7 proyek demo DKI Jakarta):");
-  console.log("   URL     : http://localhost:3000/pantau-jalan");
+  console.log("PantauSekitar (7 proyek demo DKI Jakarta):");
+  console.log("   URL     : http://localhost:3000/pantau-sekitar");
   console.log("--------------------------------------------------");
 }
 
