@@ -37,3 +37,22 @@ export const updateProjectSchema = projectFormSchema.extend({
 export const archiveProjectSchema = z.object({
   projectId: z.string().uuid("ID proyek tidak valid."),
 });
+
+/** Tahapan awal yang wajib diisi saat membuat proyek baru. */
+export const initialLandmarksSchema = z
+  .array(
+    z.object({
+      name: z
+        .string()
+        .trim()
+        .min(3, "Nama tahapan minimal 3 karakter.")
+        .max(150, "Nama tahapan maksimal 150 karakter."),
+      weight: z.coerce
+        .number()
+        .int("Bobot harus berupa bilangan bulat.")
+        .min(1, "Bobot tahapan minimal 1.")
+        .max(100, "Bobot tahapan maksimal 100."),
+    })
+  )
+  .min(1, "Minimal satu tahapan proyek wajib diisi.")
+  .max(30, "Maksimal 30 tahapan saat membuat proyek.");

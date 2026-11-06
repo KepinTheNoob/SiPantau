@@ -9,8 +9,8 @@ import {
   createProject,
   updateProject,
   archiveProject,
-} from "@/server/actions/projects";
-import { addLandmark, deleteLandmark } from "@/server/actions/landmarks";
+} from "@/server/controllers/projects";
+import { addLandmark, deleteLandmark } from "@/server/controllers/landmarks";
 import { AgencyAccessDeniedError } from "@/server/auth/errors";
 
 describe("Fase 3: Project and Landmark CRUD & Authorization", () => {
@@ -123,11 +123,26 @@ describe("Fase 3: Project and Landmark CRUD & Authorization", () => {
     formData.append("budget_total", "2500000000");
     formData.append("start_date", "2026-03-01");
     formData.append("target_end_date", "2026-12-31");
+    formData.append("landmark_name", "Pondasi dan pilar");
+    formData.append("landmark_weight", "40");
+    formData.append("landmark_name", "Girder dan pengaspalan");
+    formData.append("landmark_weight", "60");
 
     const result = await createProject(formData, adminA.client);
 
     expect(result.success).toBe(true);
     expect(result.projectId).toBeDefined();
+
+    const { data: createdLandmarks } = await adminA.client
+      .from("landmarks")
+      .select("name, weight, position")
+      .eq("project_id", result.projectId ?? "")
+      .order("position", { ascending: true });
+
+    expect(createdLandmarks?.map((landmark) => landmark.name)).toEqual([
+      "Pondasi dan pilar",
+      "Girder dan pengaspalan",
+    ]);
 
     // Verify in database
     const { data: createdProj } = await adminA.client
@@ -138,6 +153,36 @@ describe("Fase 3: Project and Landmark CRUD & Authorization", () => {
 
     expect(createdProj?.agency_id).toBe(agencyAId);
     expect(createdProj?.slug).toBe("pembangunan-flyover-baru");
+  });
+
+  it("admin A CANNOT create a project without any landmark", async () => {
+    const formData = new FormData();
+    formData.append("title", "Proyek Tanpa Tahapan");
+    formData.append("slug", "proyek-tanpa-tahapan");
+    formData.append(
+      "description",
+      "Proyek ini sengaja dibuat tanpa tahapan untuk menguji validasi."
+    );
+    formData.append("category", "Perbaikan Jalan");
+    formData.append("location_name", "Jakarta Barat");
+    formData.append("budget_total", "100000000");
+    formData.append("start_date", "2026-03-01");
+    formData.append("target_end_date", "2026-12-31");
+
+    const result = await createProject(formData, adminA.client);
+
+    expect(result.success).toBe(false);
+    expect(
+      result.fieldErrors?.some((error) => error.field === "landmarks")
+    ).toBe(true);
+
+    const { data: leftover } = await adminA.client
+      .from("projects")
+      .select("id")
+      .eq("slug", "proyek-tanpa-tahapan")
+      .maybeSingle();
+
+    expect(leftover).toBeNull();
   });
 
   it("admin A can update own project via Server Action", async () => {

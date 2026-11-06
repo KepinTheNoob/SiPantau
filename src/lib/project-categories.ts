@@ -1,5 +1,5 @@
 /**
- * Kategori PantauJalanan: proyek atau kegiatan yang memakai badan jalan.
+ * Kategori PantauSekitar: proyek atau kegiatan yang memakai badan jalan.
  * Hanya kategori ini yang tampil di peta "Proyek Jalan di Sekitar Anda".
  */
 export const ROAD_CATEGORIES = [

@@ -9,7 +9,7 @@ import { listAgencyAdminAccounts } from "@/server/admin-only/accounts";
 import {
   toggleAgencyVerification,
   createAgencyAdminAccount,
-} from "@/server/actions/super-admin";
+} from "@/server/controllers/super-admin";
 import { listUserAccounts } from "@/server/admin-only/accounts";
 import { requireSuperAdmin } from "@/server/auth";
 import { ForbiddenError } from "@/server/auth/errors";

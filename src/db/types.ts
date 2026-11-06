@@ -206,6 +206,42 @@ export type Database = {
           },
         ];
       };
+      landmark_images: {
+        Row: {
+          caption: string;
+          created_at: string;
+          id: string;
+          image_path: string;
+          landmark_id: string;
+          uploaded_by: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          caption?: string;
+          created_at?: string;
+          id?: string;
+          image_path: string;
+          landmark_id: string;
+          uploaded_by?: string | null;
+        };
+        Update: {
+          caption?: string;
+          created_at?: string;
+          id?: string;
+          image_path?: string;
+          landmark_id?: string;
+          uploaded_by?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "landmark_images_landmark_id_fkey";
+            columns: ["landmark_id"];
+            isOneToOne: false;
+            referencedRelation: "landmarks";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       landmarks: {
         Row: {
           created_at: string;
@@ -284,6 +320,52 @@ export type Database = {
             columns: ["agency_id"];
             isOneToOne: false;
             referencedRelation: "agencies";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      project_images: {
+        Row: {
+          caption: string;
+          created_at: string;
+          id: string;
+          image_path: string;
+          is_cover: boolean;
+          position: number;
+          project_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          caption?: string;
+          created_at?: string;
+          id?: string;
+          image_path: string;
+          is_cover?: boolean;
+          position?: number;
+          project_id: string;
+        };
+        Update: {
+          caption?: string;
+          created_at?: string;
+          id?: string;
+          image_path?: string;
+          is_cover?: boolean;
+          position?: number;
+          project_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "project_images_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "project_stats";
+            referencedColumns: ["project_id"];
+          },
+          {
+            foreignKeyName: "project_images_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
             referencedColumns: ["id"];
           },
         ];

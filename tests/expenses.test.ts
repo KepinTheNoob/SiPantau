@@ -9,7 +9,7 @@ import {
   addExpense,
   updateExpense,
   deleteExpense,
-} from "@/server/actions/expenses";
+} from "@/server/controllers/expenses";
 import { AgencyAccessDeniedError } from "@/server/auth/errors";
 
 describe("Fase 5: Budget and Realization (Expenses) Authorization", () => {

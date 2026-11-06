@@ -18,7 +18,7 @@ const categoryGroups: readonly {
   readonly options: readonly CategoryOption[];
 }[] = [
   {
-    label: "PantauJalanan · tampil di peta proyek jalan",
+    label: "PantauSekitar · tampil di peta proyek jalan",
     options: ROAD_CATEGORIES.map((category) => ({
       value: category,
       description: ROAD_CATEGORY_HINTS[category],

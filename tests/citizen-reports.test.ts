@@ -9,7 +9,7 @@ import {
 import {
   submitCitizenReport,
   moderateCitizenReport,
-} from "@/server/actions/citizen-reports";
+} from "@/server/controllers/citizen-reports";
 import { AgencyAccessDeniedError } from "@/server/auth/errors";
 
 describe("Fase 7: Citizen Reports RLS and Moderation Authorization", () => {
