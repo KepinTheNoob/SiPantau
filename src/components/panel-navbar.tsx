@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { logoutAction } from "@/server/actions/auth";
+import { logoutAction } from "@/server/controllers/auth";
 import { SipantauLogo } from "@/components/sipantau-logo";
 
 type PanelNavbarProps = {

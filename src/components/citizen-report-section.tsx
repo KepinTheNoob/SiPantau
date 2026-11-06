@@ -3,8 +3,8 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { Database } from "@/db/types";
-import { submitCitizenReport } from "@/server/actions/citizen-reports";
-import { citizenSignOutAction } from "@/server/actions/citizen-auth";
+import { submitCitizenReport } from "@/server/controllers/citizen-reports";
+import { citizenSignOutAction } from "@/server/controllers/citizen-auth";
 import { CitizenAuthDialog } from "@/components/citizen-auth-dialog";
 import { getSupabaseUrl } from "@/lib/supabase/env";
 

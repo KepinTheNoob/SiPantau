@@ -9,8 +9,8 @@ import {
   createProject,
   updateProject,
   archiveProject,
-} from "@/server/actions/projects";
-import { addLandmark, deleteLandmark } from "@/server/actions/landmarks";
+} from "@/server/controllers/projects";
+import { addLandmark, deleteLandmark } from "@/server/controllers/landmarks";
 import { AgencyAccessDeniedError } from "@/server/auth/errors";
 
 describe("Fase 3: Project and Landmark CRUD & Authorization", () => {

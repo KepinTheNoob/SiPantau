@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import zlib from "node:zlib";
 import { createClient } from "@supabase/supabase-js";
 
 function loadEnvLocal() {
@@ -198,6 +199,323 @@ async function seedRoadProject(project: SeedRoadProject): Promise<void> {
       `Gagal membuat pengeluaran ${project.slug}: ${expenseError.message}`
     );
   }
+}
+
+// ---------------------------------------------------------------------------
+// Gambar seed: foto galeri proyek dan foto bukti tahapan.
+// Kalau folder scripts/seed-images/<slug-proyek>/ berisi JPG/PNG/WebP, file itu
+// yang dipakai (urutan nama file, file pertama jadi sampul). Kalau tidak ada,
+// seed membuat PNG placeholder bergaris yang jelas bukan foto lapangan.
+// ---------------------------------------------------------------------------
+
+const SEED_IMAGE_DIR = path.resolve(process.cwd(), "scripts/seed-images");
+
+const PLACEHOLDER_CAPTION = "Foto demo (placeholder)";
+
+type Rgb = readonly [number, number, number];
+
+type SeedImageFile = {
+  readonly bytes: Buffer;
+  readonly extension: string;
+  readonly contentType: string;
+  readonly caption: string;
+};
+
+const PLACEHOLDER_PALETTE: readonly (readonly [Rgb, Rgb])[] = [
+  [
+    [13, 107, 227],
+    [61, 139, 235],
+  ],
+  [
+    [10, 188, 143],
+    [59, 205, 168],
+  ],
+  [
+    [180, 83, 9],
+    [205, 117, 52],
+  ],
+  [
+    [71, 85, 105],
+    [105, 118, 137],
+  ],
+];
+
+const CRC_TABLE = buildCrcTable();
+
+function buildCrcTable(): Uint32Array {
+  const table = new Uint32Array(256);
+
+  for (let n = 0; n < 256; n += 1) {
+    let c = n;
+
+    for (let k = 0; k < 8; k += 1) {
+      c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    }
+
+    table[n] = c >>> 0;
+  }
+
+  return table;
+}
+
+function crc32(bytes: Buffer): number {
+  let crc = 0xffffffff;
+
+  for (const byte of bytes) {
+    crc = (CRC_TABLE[(crc ^ byte) & 0xff] ?? 0) ^ (crc >>> 8);
+  }
+
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+function pngChunk(type: string, data: Buffer): Buffer {
+  const length = Buffer.alloc(4);
+  const typeBytes = Buffer.from(type, "ascii");
+  const crc = Buffer.alloc(4);
+
+  length.writeUInt32BE(data.length);
+  crc.writeUInt32BE(crc32(Buffer.concat([typeBytes, data])));
+
+  return Buffer.concat([length, typeBytes, data, crc]);
+}
+
+/** PNG placeholder: garis diagonal dua warna dengan bingkai putih di tengah. */
+function placeholderPng(
+  width: number,
+  height: number,
+  base: Rgb,
+  stripe: Rgb
+): Buffer {
+  const rowLength = width * 3 + 1;
+  const raw = Buffer.alloc(rowLength * height);
+  const frameLeft = Math.round(width * 0.3);
+  const frameRight = Math.round(width * 0.7);
+  const frameTop = Math.round(height * 0.3);
+  const frameBottom = Math.round(height * 0.7);
+  const frameThickness = 6;
+
+  for (let y = 0; y < height; y += 1) {
+    raw[y * rowLength] = 0;
+
+    for (let x = 0; x < width; x += 1) {
+      const insideFrame =
+        x >= frameLeft && x <= frameRight && y >= frameTop && y <= frameBottom;
+
+      const onFrameBorder =
+        insideFrame &&
+        (x - frameLeft < frameThickness ||
+          frameRight - x < frameThickness ||
+          y - frameTop < frameThickness ||
+          frameBottom - y < frameThickness);
+
+      const color: Rgb = onFrameBorder
+        ? [255, 255, 255]
+        : (x + y) % 80 < 40
+          ? base
+          : stripe;
+
+      const offset = y * rowLength + 1 + x * 3;
+
+      raw[offset] = color[0];
+      raw[offset + 1] = color[1];
+      raw[offset + 2] = color[2];
+    }
+  }
+
+  const header = Buffer.alloc(13);
+
+  header.writeUInt32BE(width, 0);
+  header.writeUInt32BE(height, 4);
+  header.writeUInt8(8, 8);
+  header.writeUInt8(2, 9);
+
+  return Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    pngChunk("IHDR", header),
+    pngChunk("IDAT", zlib.deflateSync(raw)),
+    pngChunk("IEND", Buffer.alloc(0)),
+  ]);
+}
+
+function placeholderImages(
+  count: number,
+  paletteOffset: number
+): readonly SeedImageFile[] {
+  const images: SeedImageFile[] = [];
+
+  for (let index = 0; index < count; index += 1) {
+    const colors =
+      PLACEHOLDER_PALETTE[(paletteOffset + index) % PLACEHOLDER_PALETTE.length];
+
+    if (colors === undefined) {
+      continue;
+    }
+
+    images.push({
+      bytes: placeholderPng(800, 450, colors[0], colors[1]),
+      extension: "png",
+      contentType: "image/png",
+      caption: `${PLACEHOLDER_CAPTION} ${index + 1}`,
+    });
+  }
+
+  return images;
+}
+
+function contentTypeForExtension(extension: string): string | null {
+  switch (extension) {
+    case "jpg":
+    case "jpeg":
+      return "image/jpeg";
+    case "png":
+      return "image/png";
+    case "webp":
+      return "image/webp";
+    default:
+      return null;
+  }
+}
+
+/** Foto asli dari scripts/seed-images/<slug>/, kalau ada. */
+function customImagesFor(slug: string): readonly SeedImageFile[] {
+  const folder = path.join(SEED_IMAGE_DIR, slug);
+
+  if (!fs.existsSync(folder)) {
+    return [];
+  }
+
+  const images: SeedImageFile[] = [];
+
+  for (const fileName of fs.readdirSync(folder).sort()) {
+    const extension = path.extname(fileName).slice(1).toLowerCase();
+    const contentType = contentTypeForExtension(extension);
+
+    if (contentType === null) {
+      continue;
+    }
+
+    images.push({
+      bytes: fs.readFileSync(path.join(folder, fileName)),
+      extension,
+      contentType,
+      caption: path.parse(fileName).name.replace(/^\d+[-_ ]*/, ""),
+    });
+  }
+
+  return images;
+}
+
+async function uploadSeedImage(
+  storagePath: string,
+  image: SeedImageFile
+): Promise<void> {
+  const { error } = await client.storage
+    .from("evidence")
+    .upload(storagePath, image.bytes, {
+      contentType: image.contentType,
+      upsert: true,
+    });
+
+  if (error) {
+    throw new Error(`Gagal mengunggah ${storagePath}: ${error.message}`);
+  }
+}
+
+/** Mengisi galeri proyek dan foto bukti tahapan selesai untuk proyek-proyek seed. */
+async function seedImages(slugs: readonly string[]): Promise<void> {
+  const { data: projects, error } = await client
+    .from("projects")
+    .select("id, slug, agency_id, category")
+    .in("slug", [...slugs]);
+
+  if (error || !projects) {
+    throw new Error(`Gagal memuat proyek untuk seed gambar: ${error?.message}`);
+  }
+
+  let usedCustomImages = 0;
+
+  for (const [projectIndex, project] of projects.entries()) {
+    const { data: oldImages } = await client
+      .from("project_images")
+      .select("image_path")
+      .eq("project_id", project.id);
+
+    const oldPaths = (oldImages ?? []).map(
+      (image: { image_path: string }) => image.image_path
+    );
+
+    if (oldPaths.length > 0) {
+      await client.storage.from("evidence").remove(oldPaths);
+    }
+
+    await client.from("project_images").delete().eq("project_id", project.id);
+
+    const customImages = customImagesFor(project.slug);
+    const isEvent = project.category === "Acara & Penutupan Jalan";
+
+    const galleryImages =
+      customImages.length > 0
+        ? customImages
+        : placeholderImages(isEvent ? 1 : 3, projectIndex);
+
+    if (customImages.length > 0) {
+      usedCustomImages += 1;
+    }
+
+    const galleryRows = [];
+
+    for (const [index, image] of galleryImages.entries()) {
+      const storagePath = `${project.agency_id}/${project.id}/gallery/seed-${index + 1}.${image.extension}`;
+
+      await uploadSeedImage(storagePath, image);
+
+      galleryRows.push({
+        project_id: project.id,
+        image_path: storagePath,
+        caption: image.caption,
+        is_cover: index === 0,
+        position: index,
+      });
+    }
+
+    const { error: galleryError } = await client
+      .from("project_images")
+      .insert(galleryRows);
+
+    if (galleryError) {
+      throw new Error(
+        `Gagal menyimpan galeri ${project.slug}: ${galleryError.message}`
+      );
+    }
+
+    const { data: doneLandmarks } = await client
+      .from("landmarks")
+      .select("id")
+      .eq("project_id", project.id)
+      .eq("done", true);
+
+    for (const landmark of doneLandmarks ?? []) {
+      const [photo] = placeholderImages(1, projectIndex + 1);
+
+      if (photo === undefined) {
+        continue;
+      }
+
+      const storagePath = `${project.agency_id}/${project.id}/landmarks/${landmark.id}/photos/seed-1.png`;
+
+      await uploadSeedImage(storagePath, photo);
+
+      await client.from("landmark_images").insert({
+        landmark_id: landmark.id,
+        image_path: storagePath,
+        caption: `${PLACEHOLDER_CAPTION} bukti tahapan`,
+      });
+    }
+  }
+
+  console.log(
+    `-> Gambar seed: ${projects.length} proyek, ${usedCustomImages} memakai foto dari scripts/seed-images/.`
+  );
 }
 
 async function main() {
@@ -735,6 +1053,16 @@ async function main() {
   for (const roadProject of roadProjects) {
     await seedRoadProject(roadProject);
   }
+
+  // 7. Galeri foto proyek & foto bukti tahapan
+  console.log("-> Menyiapkan galeri foto dan foto bukti tahapan...");
+
+  await seedImages([
+    "pembangunan-jembatan-ciliwung-kampung-melayu",
+    "revitalisasi-saluran-drainase-utama-kota",
+    "pembangunan-rusunawa-tahap-2",
+    ...roadProjects.map((roadProject) => roadProject.slug),
+  ]);
 
   console.log("✅ Seeding selesai dengan sukses!");
   console.log("--------------------------------------------------");

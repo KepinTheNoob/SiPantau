@@ -87,10 +87,10 @@ Script ini membuat:
 
 Kredensial akun demo:
 
-| Role                  | Email                           | Password       |
-| --------------------- | ------------------------------- | -------------- |
-| Super Admin           | `superadmin@sipantau.co.id` | `Password123!` |
-| Admin Instansi (PUPR) | `admin.pupr@sipantau.co.id` | `Password123!` |
+| Role                         | Email                             | Password       |
+| ---------------------------- | --------------------------------- | -------------- |
+| Super Admin                  | `superadmin@sipantau.co.id`       | `Password123!` |
+| Admin Instansi (PUPR)        | `admin.pupr@sipantau.co.id`       | `Password123!` |
 | Admin Instansi (DKI Jakarta) | `admin.dkijakarta@sipantau.co.id` | `Password123!` |
 
 ### 5. Jalankan server pengembangan
@@ -161,16 +161,22 @@ Test suite mencakup:
 
 ```
 src/
-├── app/                    # Halaman Next.js (App Router)
-│   ├── (halaman publik)    # /, /proyek/[slug], /instansi/[slug]
-│   ├── admin/              # Panel admin instansi
-│   ├── super-admin/        # Panel super admin
-│   └── masuk/              # Halaman login
-├── components/             # Komponen React (map, audit log, laporan warga)
+├── app/                    # Next.js App Router
+│   ├── layout.tsx          # Layout root + globals.css
+│   └── (routes)/           # Semua halaman (route group, tidak memengaruhi URL)
+│       ├── page.tsx        # / (daftar proyek)
+│       ├── proyek/         # /proyek/[slug]
+│       ├── instansi/       # /instansi/[slug]
+│       ├── pantau-sekitar/ # Peta proyek jalan di sekitar pengguna
+│       ├── admin/          # Panel admin instansi
+│       ├── super-admin/    # Panel super admin
+│       └── masuk/          # Halaman login pengelola
+├── components/             # Komponen React (view) yang dipakai banyak halaman
 ├── db/                     # Tipe database (di-generate)
 ├── lib/                    # Utilitas (rupiah, progres, validasi, supabase client)
 └── server/
-    ├── actions/            # Server Actions (semua mutasi data)
+    ├── models/             # Akses data: query Supabase & storage per entitas
+    ├── controllers/        # Server Actions: validasi, otorisasi, lalu panggil model
     ├── admin-only/         # Operasi service role (hanya digunakan server)
     └── auth/               # Helper autentikasi & otorisasi
 
@@ -184,7 +190,7 @@ scripts/
 
 ## Aturan Keamanan (Tidak Boleh Dilanggar)
 
-1. Semua mutasi data **hanya** melalui Server Actions di `src/server/actions/`
+1. Semua mutasi data **hanya** melalui Server Actions di `src/server/controllers/`, yang memakai query dari `src/server/models/`
 2. Setiap action wajib: cek sesi → `requireAgencyAccess` → validasi Zod → audit log
 3. `SUPABASE_SERVICE_ROLE_KEY` hanya boleh dipakai di `src/server/admin-only/`
 4. Semua tabel menggunakan RLS — query memakai session client agar RLS berlaku

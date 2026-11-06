@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import {
   citizenSignInAction,
   citizenSignUpAction,
-} from "@/server/actions/citizen-auth";
+} from "@/server/controllers/citizen-auth";
 
 type AuthMode = "masuk" | "daftar";
 

@@ -1,6 +1,9 @@
 import type { User, SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/db/types";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { findAgencyById } from "@/server/models/agencies";
+import { findProfileById } from "@/server/models/profiles";
+import { findProjectById } from "@/server/models/projects";
 import {
   UnauthorizedError,
   ForbiddenError,
@@ -42,11 +45,10 @@ export async function getCurrentUser(
     return null;
   }
 
-  const { data: profile, error: profileError } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .maybeSingle();
+  const { data: profile, error: profileError } = await findProfileById(
+    supabase,
+    user.id
+  );
 
   if (profileError !== null || profile === null) {
     return null;
@@ -55,11 +57,10 @@ export async function getCurrentUser(
   let agency: AgencyData | null = null;
 
   if (profile.agency_id !== null) {
-    const { data: agencyData } = await supabase
-      .from("agencies")
-      .select("*")
-      .eq("id", profile.agency_id)
-      .maybeSingle();
+    const { data: agencyData } = await findAgencyById(
+      supabase,
+      profile.agency_id
+    );
 
     agency = agencyData;
   }
@@ -125,11 +126,10 @@ export async function requireAgencyAccess(
     );
   }
 
-  const { data: project, error: projectError } = await supabase
-    .from("projects")
-    .select("*")
-    .eq("id", projectId)
-    .maybeSingle();
+  const { data: project, error: projectError } = await findProjectById(
+    supabase,
+    projectId
+  );
 
   if (projectError !== null || project === null) {
     throw new ProjectNotFoundError();
@@ -139,11 +139,10 @@ export async function requireAgencyAccess(
     throw new AgencyAccessDeniedError();
   }
 
-  const { data: agency, error: agencyError } = await supabase
-    .from("agencies")
-    .select("*")
-    .eq("id", project.agency_id)
-    .maybeSingle();
+  const { data: agency, error: agencyError } = await findAgencyById(
+    supabase,
+    project.agency_id
+  );
 
   if (agencyError !== null || agency === null || !agency.verified) {
     throw new UnverifiedAgencyError();

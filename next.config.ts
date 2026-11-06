@@ -2,6 +2,12 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  experimental: {
+    serverActions: {
+      // Default 1 MB terlalu kecil untuk unggah foto galeri (maks 5 foto x 5 MB) dan bukti 10 MB.
+      bodySizeLimit: "26mb",
+    },
+  },
   turbopack: {
     rules: {
       "*.css": {
