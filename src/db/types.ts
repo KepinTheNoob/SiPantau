@@ -150,6 +150,59 @@ export type Database = {
           },
         ];
       };
+      delay_reason_categories: {
+        Row: {
+          code: string;
+          id: number;
+          label: string;
+          position: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          code: string;
+          id: number;
+          label: string;
+          position?: number;
+        };
+        Update: {
+          code?: string;
+          id?: number;
+          label?: string;
+          position?: number;
+        };
+        Relationships: [];
+      };
+      delay_report_reasons: {
+        Row: {
+          reason_category_id: number;
+          report_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          reason_category_id: number;
+          report_id: string;
+        };
+        Update: {
+          reason_category_id?: number;
+          report_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "delay_report_reasons_reason_category_id_fkey";
+            columns: ["reason_category_id"];
+            isOneToOne: false;
+            referencedRelation: "delay_reason_categories";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "delay_report_reasons_report_id_fkey";
+            columns: ["report_id"];
+            isOneToOne: false;
+            referencedRelation: "project_delay_reports";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       expenses: {
         Row: {
           amount: number;
@@ -324,6 +377,52 @@ export type Database = {
           },
         ];
       };
+      project_delay_reports: {
+        Row: {
+          created_at: string;
+          id: string;
+          project_id: string;
+          reason_detail: string;
+          recovery_plan: string;
+          reported_by: string | null;
+          revised_target_date: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          id?: string;
+          project_id: string;
+          reason_detail: string;
+          recovery_plan: string;
+          reported_by?: string | null;
+          revised_target_date: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          project_id?: string;
+          reason_detail?: string;
+          recovery_plan?: string;
+          reported_by?: string | null;
+          revised_target_date?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "project_delay_reports_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "project_stats";
+            referencedColumns: ["project_id"];
+          },
+          {
+            foreignKeyName: "project_delay_reports_project_id_fkey";
+            columns: ["project_id"];
+            isOneToOne: false;
+            referencedRelation: "projects";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       project_images: {
         Row: {
           caption: string;
@@ -432,6 +531,20 @@ export type Database = {
       };
     };
     Views: {
+      project_delay_overview: {
+        Row: {
+          agency_id: string;
+          effective_target_date: string;
+          latest_report_at: string | null;
+          latest_report_id: string | null;
+          latest_revised_target_date: string | null;
+          needs_delay_report: boolean;
+          original_target_date: string;
+          project_id: string;
+        };
+        ComputedFields: never;
+        Relationships: [];
+      };
       project_stats: {
         Row: {
           agency_id: string;
@@ -458,6 +571,16 @@ export type Database = {
       };
     };
     Functions: {
+      submit_delay_report: {
+        Args: {
+          p_project_id: string;
+          p_reason_category_ids: number[];
+          p_reason_detail: string;
+          p_recovery_plan: string;
+          p_revised_target_date: string;
+        };
+        Returns: string;
+      };
       get_user_agency_id: { Args: Record<PropertyKey, never>; Returns: string };
       is_super_admin: { Args: Record<PropertyKey, never>; Returns: boolean };
       is_verified_agency_admin: {

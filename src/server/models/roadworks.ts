@@ -1,4 +1,5 @@
 import type { DbClient } from "./db";
+import { listDelayOverviews } from "./delay-reports";
 import {
   ROAD_CATEGORIES,
   ROAD_EVENT_CATEGORY,
@@ -52,19 +53,30 @@ export async function getRoadworkProjects(
     return { projects: [], loadFailed: false };
   }
 
-  const { data: stats, error: statsError } = await supabase
-    .from("project_stats")
-    .select("project_id, progress_percent, status_waktu")
-    .in(
-      "project_id",
-      rows.map((row) => row.id)
-    );
+  const projectIds = rows.map((row) => row.id);
+
+  const [{ data: stats, error: statsError }, { data: delays }] =
+    await Promise.all([
+      supabase
+        .from("project_stats")
+        .select("project_id, progress_percent, status_waktu")
+        .in("project_id", projectIds),
+      listDelayOverviews(supabase, projectIds),
+    ]);
 
   if (statsError !== null) {
     return { projects: [], loadFailed: true };
   }
 
   const statsByProject = new Map(stats.map((stat) => [stat.project_id, stat]));
+
+  const revisedTargetByProject = new Map(
+    (delays ?? []).map((delay) => [
+      delay.project_id,
+      delay.latest_revised_target_date,
+    ])
+  );
+
   const today = todayInJakarta();
   const projects: RoadworkProject[] = [];
 
@@ -73,7 +85,9 @@ export async function getRoadworkProjects(
       continue;
     }
 
-    const daysToDeadline = daysBetween(today, row.target_end_date);
+    const revisedTarget = revisedTargetByProject.get(row.id) ?? null;
+    const targetEndDate = revisedTarget ?? row.target_end_date;
+    const daysToDeadline = daysBetween(today, targetEndDate);
 
     if (row.category === ROAD_EVENT_CATEGORY && daysToDeadline < 0) {
       continue;
@@ -92,7 +106,8 @@ export async function getRoadworkProjects(
       lng: row.lng,
       status: roadworkStatusFrom(stat?.status_waktu ?? null),
       progressPercent: Math.round(stat?.progress_percent ?? 0),
-      targetEndDate: row.target_end_date,
+      targetEndDate,
+      isTargetRevised: revisedTarget !== null,
       daysToDeadline,
     });
   }

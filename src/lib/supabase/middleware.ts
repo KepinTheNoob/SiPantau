@@ -4,6 +4,21 @@ import type { Database } from "@/db/types";
 import { getSupabaseAnonKey, getSupabaseUrl } from "./env";
 import { panelHomeForRole } from "@/lib/panel-routes";
 
+/**
+ * Kode error Supabase yang berarti sesi di cookie sudah tidak ada di server
+ * (misalnya setelah `supabase db reset`, akun dihapus, atau token sudah dipakai).
+ */
+const STALE_SESSION_ERROR_CODES: ReadonlySet<string> = new Set([
+  "refresh_token_not_found",
+  "refresh_token_already_used",
+  "session_not_found",
+  "user_not_found",
+]);
+
+function isSupabaseAuthCookie(name: string): boolean {
+  return name.startsWith("sb-") && name.includes("-auth-token");
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
@@ -36,7 +51,35 @@ export async function updateSession(request: NextRequest) {
 
   const {
     data: { user },
+    error: userError,
   } = await supabase.auth.getUser();
+
+  // Sesi basi: hapus cookie auth supaya request berikutnya tidak terus mencoba refresh
+  // (sumber error "Invalid Refresh Token: Refresh Token Not Found").
+  const staleCookieNames =
+    userError?.code !== undefined &&
+    STALE_SESSION_ERROR_CODES.has(userError.code)
+      ? request.cookies
+          .getAll()
+          .map((cookie) => cookie.name)
+          .filter(isSupabaseAuthCookie)
+      : [];
+
+  if (staleCookieNames.length > 0) {
+    for (const name of staleCookieNames) {
+      request.cookies.delete(name);
+    }
+
+    supabaseResponse = NextResponse.next({ request });
+  }
+
+  const withStaleCookiesCleared = (response: NextResponse): NextResponse => {
+    for (const name of staleCookieNames) {
+      response.cookies.delete(name);
+    }
+
+    return response;
+  };
 
   const pathname = request.nextUrl.pathname;
 
@@ -47,7 +90,7 @@ export async function updateSession(request: NextRequest) {
       url.pathname = "/masuk";
       url.searchParams.set("redirect", pathname);
 
-      return NextResponse.redirect(url);
+      return withStaleCookiesCleared(NextResponse.redirect(url));
     }
 
     // Check MFA TOTP assurance level
@@ -90,5 +133,5 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  return supabaseResponse;
+  return withStaleCookiesCleared(supabaseResponse);
 }
