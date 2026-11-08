@@ -518,6 +518,94 @@ async function seedImages(slugs: readonly string[]): Promise<void> {
   );
 }
 
+type SeedDelayReport = {
+  readonly createdOffsetDays: number;
+  readonly revisedTargetOffsetDays: number;
+  readonly reasonCodes: readonly string[];
+  readonly reasonDetail: string;
+  readonly recoveryPlan: string;
+};
+
+/** Laporan keterlambatan demo untuk satu proyek (riwayat lama dihapus dulu). */
+async function seedDelayReports(
+  projectSlug: string,
+  reportedBy: string,
+  reports: readonly SeedDelayReport[]
+): Promise<void> {
+  const { data: project, error: projectError } = await client
+    .from("projects")
+    .select("id")
+    .eq("slug", projectSlug)
+    .single();
+
+  if (projectError || !project) {
+    throw new Error(
+      `Proyek ${projectSlug} tidak ditemukan: ${projectError?.message}`
+    );
+  }
+
+  const { data: categories, error: categoryError } = await client
+    .from("delay_reason_categories")
+    .select("id, code");
+
+  if (categoryError || !categories) {
+    throw new Error(
+      `Tabel delay_reason_categories belum ada. Jalankan migration terbaru dulu: ${categoryError?.message}`
+    );
+  }
+
+  const categoryIdByCode = new Map(
+    categories.map((category: { id: number; code: string }) => [
+      category.code,
+      category.id,
+    ])
+  );
+
+  await client
+    .from("project_delay_reports")
+    .delete()
+    .eq("project_id", project.id);
+
+  for (const report of reports) {
+    const { data: inserted, error: reportError } = await client
+      .from("project_delay_reports")
+      .insert({
+        project_id: project.id,
+        reported_by: reportedBy,
+        reason_detail: report.reasonDetail,
+        recovery_plan: report.recoveryPlan,
+        revised_target_date: isoDateFromToday(report.revisedTargetOffsetDays),
+        created_at: `${isoDateFromToday(report.createdOffsetDays)}T09:00:00Z`,
+      })
+      .select("id")
+      .single();
+
+    if (reportError || !inserted) {
+      throw new Error(
+        `Gagal membuat laporan keterlambatan ${projectSlug}: ${reportError?.message}`
+      );
+    }
+
+    const reasonRows = report.reasonCodes.flatMap((code) => {
+      const categoryId = categoryIdByCode.get(code);
+
+      return categoryId === undefined
+        ? []
+        : [{ report_id: inserted.id, reason_category_id: categoryId }];
+    });
+
+    const { error: reasonError } = await client
+      .from("delay_report_reasons")
+      .insert(reasonRows);
+
+    if (reasonError) {
+      throw new Error(
+        `Gagal menyimpan alasan keterlambatan ${projectSlug}: ${reasonError.message}`
+      );
+    }
+  }
+}
+
 async function main() {
   console.log("🌱 Menyiapkan data awal (seeding)...");
 
@@ -1054,6 +1142,47 @@ async function main() {
     await seedRoadProject(roadProject);
   }
 
+  // 6b. Admin Dinas Bina Marga + laporan keterlambatan demo
+  console.log("-> Menyiapkan akun admin Bina Marga & laporan keterlambatan...");
+
+  const binaMargaAdminId = await findOrCreateUser(
+    "admin.binamarga@sipantau.co.id",
+    "Password123!"
+  );
+
+  await client.from("profiles").upsert({
+    id: binaMargaAdminId,
+    role: "admin",
+    agency_id: agencyBinaMarga.id,
+  });
+
+  // Dua laporan: target revisi pertama ikut terlewat, lalu direvisi lagi.
+  // Proyek drainase (Dinas PUPR) sengaja tanpa laporan agar popup admin.pupr muncul.
+  await seedDelayReports(
+    "demo-perbaikan-trotoar-pasar-minggu",
+    binaMargaAdminId,
+    [
+      {
+        createdOffsetDays: -20,
+        revisedTargetOffsetDays: -3,
+        reasonCodes: ["perizinan"],
+        reasonDetail:
+          "Saluran tepi bersinggungan dengan jaringan pipa air bersih yang belum dipetakan, sehingga galian dihentikan sambil menunggu koordinasi dengan operator air. (Data demo untuk pengembangan.)",
+        recoveryPlan:
+          "Penggalian dilanjutkan segera setelah pipa dipindahkan; pekerjaan paving dikerjakan paralel di segmen utara yang tidak terdampak.",
+      },
+      {
+        createdOffsetDays: -2,
+        revisedTargetOffsetDays: 21,
+        reasonCodes: ["perizinan", "material"],
+        reasonDetail:
+          "Pemindahan pipa air bersih selesai lebih lambat dari jadwal, dan pasokan ubin pemandu untuk penyandang disabilitas terlambat dua minggu dari pemasok. (Data demo untuk pengembangan.)",
+        recoveryPlan:
+          "Menambah satu regu kerja malam pukul 22.00-04.00 dan memesan ubin pemandu dari pemasok kedua. Lajur kiri dibuka kembali per segmen setiap kali paving selesai.",
+      },
+    ]
+  );
+
   // 7. Galeri foto proyek & foto bukti tahapan
   console.log("-> Menyiapkan galeri foto dan foto bukti tahapan...");
 
@@ -1074,6 +1203,13 @@ async function main() {
   console.log("");
   console.log("2. Admin Instansi (Dinas PUPR):");
   console.log("   Email   : admin.pupr@sipantau.co.id");
+  console.log("   Password: Password123!");
+  console.log("   URL     : http://localhost:3000/admin");
+  console.log("   Catatan : proyek drainase sudah lewat target tanpa laporan,");
+  console.log("             jadi popup laporan keterlambatan akan muncul.");
+  console.log("");
+  console.log("3. Admin Instansi (Dinas Bina Marga DKI):");
+  console.log("   Email   : admin.binamarga@sipantau.co.id");
   console.log("   Password: Password123!");
   console.log("   URL     : http://localhost:3000/admin");
   console.log("");

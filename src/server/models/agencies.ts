@@ -11,3 +11,11 @@ export function setAgencyVerified(
 ) {
   return db.from("agencies").update({ verified }).eq("id", agencyId);
 }
+
+export function listVerifiedAgencies(db: DbClient) {
+  return db
+    .from("agencies")
+    .select("id, name, slug, region")
+    .eq("verified", true)
+    .order("name", { ascending: true });
+}

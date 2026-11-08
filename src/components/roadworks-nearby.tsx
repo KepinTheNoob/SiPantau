@@ -74,7 +74,7 @@ function buildPopupContent(project: NearbyRoadwork): HTMLElement {
 
   if (!isEvent) {
     lines.push(
-      `Deadline ${formatTargetDate(project.targetEndDate)} (${deadlineCountdown(project)})`
+      `Deadline ${formatTargetDate(project.targetEndDate)}${project.isTargetRevised ? " (direvisi)" : ""} (${deadlineCountdown(project)})`
     );
   }
 
@@ -565,7 +565,8 @@ export function RoadworksNearby({
                       <span className="font-semibold">
                         {formatTargetDate(project.targetEndDate)}
                       </span>{" "}
-                      ({deadlineCountdown(project)})
+                      {project.isTargetRevised && "direvisi "}(
+                      {deadlineCountdown(project)})
                     </p>
 
                     <button

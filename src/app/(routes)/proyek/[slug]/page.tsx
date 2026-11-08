@@ -19,6 +19,13 @@ import {
 } from "@/components/project-gallery";
 import { listProjectImages } from "@/server/models/project-images";
 import { listLandmarkImages } from "@/server/models/landmark-images";
+import {
+  findDelayOverview,
+  loadDelayReportViews,
+} from "@/server/models/delay-reports";
+import { DelayExplanation } from "@/components/delay-explanation";
+import { formatIsoDate } from "@/lib/dates";
+import { todayInJakarta } from "@/lib/validation/delay-reports";
 
 export async function generateMetadata({
   params,
@@ -123,6 +130,17 @@ export default async function ProjectDetailPage({
   const landmarkImages = landmarkImagesData ?? [];
   const coverImage = projectImages.find((image) => image.is_cover) ?? null;
 
+  const [{ data: delayOverview }, delayReports] = await Promise.all([
+    findDelayOverview(supabase, project.id),
+    loadDelayReportViews(supabase, project.id),
+  ]);
+
+  const isCompleted =
+    landmarks.length > 0 && landmarks.every((landmark) => landmark.done);
+
+  const isLate = !isCompleted && todayInJakarta() > project.target_end_date;
+  const revisedTargetDate = delayOverview?.latest_revised_target_date ?? null;
+
   const {
     data: { user: signedInUser },
   } = await supabase.auth.getUser();
@@ -214,12 +232,31 @@ export default async function ProjectDetailPage({
               <div>•</div>
               <div>
                 Target Selesai:{" "}
-                <span className="font-semibold text-slate-800">
-                  {project.target_end_date}
-                </span>
+                {revisedTargetDate === null ? (
+                  <span className="font-semibold text-slate-800">
+                    {formatIsoDate(project.target_end_date)}
+                  </span>
+                ) : (
+                  <>
+                    <span className="text-slate-500 line-through">
+                      {formatIsoDate(project.target_end_date)}
+                    </span>{" "}
+                    <span className="font-semibold text-slate-800">
+                      {formatIsoDate(revisedTargetDate)} (direvisi)
+                    </span>
+                  </>
+                )}
               </div>
             </div>
           </article>
+
+          <DelayExplanation
+            agencyName={agency.name}
+            originalTargetDate={project.target_end_date}
+            isLate={isLate}
+            needsNewReport={delayOverview?.needs_delay_report ?? false}
+            reports={delayReports}
+          />
 
           {projectImages.length > 1 && (
             <ProjectGallery

@@ -10,6 +10,10 @@ import { SipantauLogo } from "@/components/sipantau-logo";
 import { PublicHeader } from "@/components/public-header";
 import { evidencePublicUrl } from "@/lib/storage-url";
 import { listCoverImages } from "@/server/models/project-images";
+import { listDelayOverviews } from "@/server/models/delay-reports";
+import { formatIsoDate } from "@/lib/dates";
+import { AgencyCombobox } from "@/components/agency-combobox";
+import { listVerifiedAgencies } from "@/server/models/agencies";
 
 export const metadata: Metadata = {
   title: "SIPANTAU - Portal Transparansi Proyek Pemerintah",
@@ -31,20 +35,47 @@ export default async function HomePage({
     readonly status?: string;
     readonly minBudget?: string;
     readonly maxBudget?: string;
+    readonly agency?: string;
   }>;
 }) {
-  const { page: rawPage, status, minBudget, maxBudget } = await searchParams;
+  const {
+    page: rawPage,
+    status,
+    minBudget,
+    maxBudget,
+    agency: agencySlug,
+  } = await searchParams;
+
   const currentPage = Math.max(1, Number(rawPage) || 1);
   const offset = (currentPage - 1) * PROJECTS_PER_PAGE;
 
   const supabase = await createSupabaseServerClient();
+
+  const { data: agenciesData } = await listVerifiedAgencies(supabase);
+  const agencies = agenciesData ?? [];
+
+  const selectedAgency = agencySlug
+    ? (agencies.find((agency) => agency.slug === agencySlug) ?? null)
+    : null;
 
   let query = supabase
     .from("project_stats")
     .select("*, agencies (id, name, slug, region)", { count: "exact" });
 
   if (status) {
-    query = query.eq("status_waktu", status);
+    // Opsi form memakai "tepat_waktu", sedangkan view project_stats menghasilkan "tepat waktu".
+    query = query.eq(
+      "status_waktu",
+      status === "tepat_waktu" ? "tepat waktu" : status
+    );
+  }
+
+  if (agencySlug) {
+    // Slug yang tidak dikenal menghasilkan daftar kosong, bukan diam-diam diabaikan.
+    query = query.eq(
+      "agency_id",
+      selectedAgency?.id ?? "00000000-0000-0000-0000-000000000000"
+    );
   }
 
   if (minBudget) {
@@ -78,12 +109,44 @@ export default async function HomePage({
         )
       : { data: [] };
 
+  const { data: delayData } =
+    projects.length > 0
+      ? await listDelayOverviews(
+          supabase,
+          projects.map((project) => project.project_id)
+        )
+      : { data: [] };
+
+  const delayByProject = new Map(
+    (delayData ?? []).map((overview) => [overview.project_id, overview])
+  );
+
   const coverByProject = new Map(
     (coverData ?? []).map((cover) => [cover.project_id, cover])
   );
 
   const totalProjects = count ?? 0;
   const totalPages = Math.ceil(totalProjects / PROJECTS_PER_PAGE);
+
+  // Link halaman ikut membawa filter yang sedang aktif.
+  const pageHref = (targetPage: number): string => {
+    const params = new URLSearchParams();
+
+    for (const [key, value] of [
+      ["status", status],
+      ["minBudget", minBudget],
+      ["maxBudget", maxBudget],
+      ["agency", agencySlug],
+    ] as const) {
+      if (value) {
+        params.set(key, value);
+      }
+    }
+
+    params.set("page", String(targetPage));
+
+    return `/?${params.toString()}`;
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between">
@@ -126,6 +189,17 @@ export default async function HomePage({
             method="GET"
             className="mb-8 rounded-xl border border-slate-200 bg-white p-4 shadow-xs flex flex-wrap items-center gap-4 text-xs"
           >
+            <AgencyCombobox
+              agencies={agencies.map((agency) => ({
+                slug: agency.slug,
+                name: agency.name,
+                region: agency.region,
+              }))}
+              name="agency"
+              defaultSlug={agencySlug ?? ""}
+              label="Instansi / Dinas"
+            />
+
             <div>
               <label
                 htmlFor="filter-status"
@@ -187,7 +261,7 @@ export default async function HomePage({
               >
                 Terapkan Filter
               </button>
-              {(status || minBudget || maxBudget) && (
+              {(status || minBudget || maxBudget || agencySlug) && (
                 <Link
                   href="/"
                   className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-600 hover:bg-slate-50 transition"
@@ -230,6 +304,7 @@ export default async function HomePage({
                     : "bg-brand-blue-light text-brand-blue border border-brand-blue/20";
 
                 const cover = coverByProject.get(p.project_id);
+                const delay = delayByProject.get(p.project_id);
 
                 return (
                   <article
@@ -273,6 +348,14 @@ export default async function HomePage({
                           {p.title}
                         </Link>
                       </h3>
+
+                      {isDelayed && (
+                        <p className="mt-2 text-xs font-semibold text-amber-800">
+                          {delay?.latest_revised_target_date
+                            ? `Target direvisi ke ${formatIsoDate(delay.latest_revised_target_date)}`
+                            : "Belum ada penjelasan keterlambatan"}
+                        </p>
+                      )}
 
                       <div className="mt-5">
                         <div className="flex justify-between text-xs font-semibold text-slate-700 mb-1">
@@ -338,7 +421,7 @@ export default async function HomePage({
             >
               {currentPage > 1 && (
                 <Link
-                  href={`/?page=${currentPage - 1}`}
+                  href={pageHref(currentPage - 1)}
                   className="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
                 >
                   ← Sebelumnya
@@ -349,7 +432,7 @@ export default async function HomePage({
               </span>
               {currentPage < totalPages && (
                 <Link
-                  href={`/?page=${currentPage + 1}`}
+                  href={pageHref(currentPage + 1)}
                   className="rounded border border-brand-blue/30 bg-white px-3 py-1.5 text-xs font-semibold text-brand-blue hover:bg-brand-blue-light"
                 >
                   Selanjutnya →

@@ -8,6 +8,13 @@ import { ProjectEditForm } from "./project-edit-form";
 import { LandmarkManager } from "./landmark-manager";
 import { ExpenseManager } from "./expense-manager";
 import { ProjectGalleryManager } from "./project-gallery-manager";
+import { DelayReportManager } from "./delay-report-manager";
+import {
+  findDelayOverview,
+  listDelayReasonCategories,
+  loadDelayReportViews,
+} from "@/server/models/delay-reports";
+import { todayInJakarta } from "@/lib/validation/delay-reports";
 import { listProjectImages } from "@/server/models/project-images";
 import { listLandmarkImages } from "@/server/models/landmark-images";
 
@@ -54,14 +61,27 @@ export default async function AdminProjectDetailPage({
 
   const expenses = expensesData ?? [];
 
-  const [{ data: projectImagesData }, { data: landmarkImagesData }] =
-    await Promise.all([
-      listProjectImages(supabase, id),
-      listLandmarkImages(
-        supabase,
-        landmarks.map((landmark) => landmark.id)
-      ),
-    ]);
+  const [
+    { data: projectImagesData },
+    { data: landmarkImagesData },
+    { data: delayOverview },
+    delayReports,
+    { data: delayCategories },
+  ] = await Promise.all([
+    listProjectImages(supabase, id),
+    listLandmarkImages(
+      supabase,
+      landmarks.map((landmark) => landmark.id)
+    ),
+    findDelayOverview(supabase, id),
+    loadDelayReportViews(supabase, id),
+    listDelayReasonCategories(supabase),
+  ]);
+
+  const isCompleted =
+    landmarks.length > 0 && landmarks.every((landmark) => landmark.done);
+
+  const isLate = !isCompleted && todayInJakarta() > project.target_end_date;
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 pb-16">
@@ -89,6 +109,23 @@ export default async function AdminProjectDetailPage({
           </h2>
           <ProjectEditForm project={project} />
         </section>
+
+        {(isLate || delayReports.length > 0) && (
+          <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs sm:p-8">
+            <DelayReportManager
+              projectId={project.id}
+              agencyName={agency.name}
+              originalTargetDate={project.target_end_date}
+              effectiveTargetDate={
+                delayOverview?.effective_target_date ?? project.target_end_date
+              }
+              isLate={isLate}
+              needsNewReport={delayOverview?.needs_delay_report ?? false}
+              categories={delayCategories ?? []}
+              reports={delayReports}
+            />
+          </section>
+        )}
 
         <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs sm:p-8">
           <ProjectGalleryManager

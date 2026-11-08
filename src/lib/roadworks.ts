@@ -15,7 +15,9 @@ export type RoadworkProject = Coordinates & {
   readonly category: RoadCategory;
   readonly status: RoadworkStatus;
   readonly progressPercent: number;
+  /** Target selesai yang berlaku: target revisi terakhir bila ada, selain itu target awal. */
   readonly targetEndDate: string;
+  readonly isTargetRevised: boolean;
   /** Selisih hari kalender (zona Asia/Jakarta) dari hari ini ke target selesai; negatif bila lewat. */
   readonly daysToDeadline: number;
 };
