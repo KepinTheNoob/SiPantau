@@ -107,6 +107,25 @@ export type Database = {
           },
         ];
       };
+      citizen_profiles: {
+        Row: {
+          created_at: string;
+          id: string;
+          nik: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          id: string;
+          nik: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          nik?: string;
+        };
+        Relationships: [];
+      };
       citizen_reports: {
         Row: {
           content: string;

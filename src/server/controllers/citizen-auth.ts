@@ -49,6 +49,7 @@ export async function citizenSignUpAction(
   formData: FormData
 ): Promise<CitizenAuthResult> {
   const parsed = citizenSignUpSchema.safeParse({
+    nik: formData.get("nik"),
     email: formData.get("email"),
     password: formData.get("password"),
     passwordConfirm: formData.get("passwordConfirm"),
@@ -67,16 +68,34 @@ export async function citizenSignUpAction(
   const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
+    options: {
+      data: {
+        nik: parsed.data.nik,
+      },
+    },
   });
 
   if (error !== null) {
+    const errorMsg = error.message.toLowerCase();
+    const isNikRegistered =
+      errorMsg.includes("nik sudah terdaftar") ||
+      errorMsg.includes("citizen_profiles_nik_key");
+
     return {
       success: false,
-      message:
-        error.code === "user_already_exists"
+      message: isNikRegistered
+        ? "NIK ini sudah terdaftar. Silakan masuk."
+        : error.code === "user_already_exists"
           ? "Email ini sudah terdaftar. Silakan masuk."
           : `Pendaftaran gagal: ${error.message}`,
     };
+  }
+
+  if (data.user !== null && data.session !== null) {
+    await supabase.from("citizen_profiles").upsert({
+      id: data.user.id,
+      nik: parsed.data.nik,
+    });
   }
 
   if (data.session === null) {

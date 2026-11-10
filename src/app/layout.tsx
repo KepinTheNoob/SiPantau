@@ -12,8 +12,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="id">
-      <body className="antialiased bg-slate-50 text-slate-900 selection:bg-brand-blue selection:text-white">
+    <html lang="id" suppressHydrationWarning>
+      <body
+        className="antialiased bg-slate-50 text-slate-900 selection:bg-brand-blue selection:text-white"
+        suppressHydrationWarning
+      >
         {children}
       </body>
     </html>

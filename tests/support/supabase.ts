@@ -118,6 +118,11 @@ export async function cleanupTestData(): Promise<void> {
     .neq("id", "00000000-0000-0000-0000-000000000000");
 
   await adminClient
+    .from("citizen_profiles")
+    .delete()
+    .neq("id", "00000000-0000-0000-0000-000000000000");
+
+  await adminClient
     .from("expenses")
     .delete()
     .neq("id", "00000000-0000-0000-0000-000000000000");

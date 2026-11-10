@@ -154,6 +154,32 @@ export function CitizenAuthDialog({
           onSubmit={handleSubmit}
           className="mt-4 flex flex-col gap-4"
         >
+          {!isSignIn && (
+            <div>
+              <label
+                htmlFor="citizen-nik"
+                className="block text-sm font-medium text-slate-700"
+              >
+                NIK (Nomor Induk Kependudukan)
+              </label>
+              <input
+                id="citizen-nik"
+                name="nik"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]{16}"
+                maxLength={16}
+                required
+                placeholder="16 digit NIK sesuai KTP"
+                autoComplete="off"
+                className={INPUT_CLASS}
+              />
+              <p className="mt-1 text-xs text-slate-600">
+                16 digit angka sesuai KTP. NIK disimpan aman untuk validasi pelapor.
+              </p>
+            </div>
+          )}
+
           <div>
             <label
               htmlFor="citizen-email"
