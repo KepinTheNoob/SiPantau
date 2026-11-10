@@ -107,24 +107,38 @@ export type Database = {
           },
         ];
       };
-      citizen_profiles: {
+      citizen_report_replies: {
         Row: {
+          body: string;
           created_at: string;
           id: string;
-          nik: string;
+          report_id: string;
+          responder_id: string | null;
         };
         ComputedFields: never;
         Insert: {
-          created_at?: string;
-          id: string;
-          nik: string;
-        };
-        Update: {
+          body: string;
           created_at?: string;
           id?: string;
-          nik?: string;
+          report_id: string;
+          responder_id?: string | null;
         };
-        Relationships: [];
+        Update: {
+          body?: string;
+          created_at?: string;
+          id?: string;
+          report_id?: string;
+          responder_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "citizen_report_replies_report_id_fkey";
+            columns: ["report_id"];
+            isOneToOne: false;
+            referencedRelation: "citizen_reports";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       citizen_reports: {
         Row: {
@@ -133,7 +147,7 @@ export type Database = {
           id: string;
           photo_path: string | null;
           project_id: string;
-          status: string;
+          reporter_id: string | null;
         };
         ComputedFields: never;
         Insert: {
@@ -142,7 +156,7 @@ export type Database = {
           id?: string;
           photo_path?: string | null;
           project_id: string;
-          status?: string;
+          reporter_id?: string | null;
         };
         Update: {
           content?: string;
@@ -150,7 +164,7 @@ export type Database = {
           id?: string;
           photo_path?: string | null;
           project_id?: string;
-          status?: string;
+          reporter_id?: string | null;
         };
         Relationships: [
           {
@@ -497,9 +511,11 @@ export type Database = {
           created_at: string;
           description: string;
           id: string;
+          impact: string;
           lat: number | null;
           lng: number | null;
           location_name: string;
+          objective: string;
           slug: string;
           start_date: string;
           target_end_date: string;
@@ -514,9 +530,11 @@ export type Database = {
           created_at?: string;
           description?: string;
           id?: string;
+          impact?: string;
           lat?: number | null;
           lng?: number | null;
           location_name: string;
+          objective?: string;
           slug: string;
           start_date: string;
           target_end_date: string;
@@ -530,9 +548,11 @@ export type Database = {
           created_at?: string;
           description?: string;
           id?: string;
+          impact?: string;
           lat?: number | null;
           lng?: number | null;
           location_name?: string;
+          objective?: string;
           slug?: string;
           start_date?: string;
           target_end_date?: string;
@@ -568,7 +588,10 @@ export type Database = {
         Row: {
           agency_id: string;
           archived_at: string | null;
+          completed_at: string | null;
+          category: string;
           budget_total: number;
+          is_completed: boolean;
           progress_percent: number | null;
           project_id: string;
           slug: string;

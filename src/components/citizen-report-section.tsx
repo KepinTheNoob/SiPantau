@@ -2,22 +2,23 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import type { Database } from "@/db/types";
 import { submitCitizenReport } from "@/server/controllers/citizen-reports";
 import { citizenSignOutAction } from "@/server/controllers/citizen-auth";
 import { CitizenAuthDialog } from "@/components/citizen-auth-dialog";
-import { getSupabaseUrl } from "@/lib/supabase/env";
-
-type CitizenReportRow = Database["public"]["Tables"]["citizen_reports"]["Row"];
+import Link from "next/link";
+import { CitizenReportCard } from "@/components/citizen-report-card";
+import type { CitizenReportView } from "@/lib/citizen-reports";
 
 export function CitizenReportSection({
   projectId,
-  approvedReports,
+  agencyName,
+  reports,
   allowSubmission,
   signedInEmail,
 }: {
   readonly projectId: string;
-  readonly approvedReports: readonly CitizenReportRow[];
+  readonly agencyName: string;
+  readonly reports: readonly CitizenReportView[];
   readonly allowSubmission: boolean;
   /** Email akun yang sedang login, null bila belum login. */
   readonly signedInEmail: string | null;
@@ -81,8 +82,6 @@ export function CitizenReportSection({
     });
   };
 
-  const storageBaseUrl = `${getSupabaseUrl()}/storage/v1/object/public/evidence`;
-
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -91,8 +90,8 @@ export function CitizenReportSection({
             Laporan & Pengawasan Warga
           </h2>
           <p className="text-xs text-slate-500">
-            Suara masyarakat untuk memastikan keterbukaan dan kesesuaian fakta
-            di lapangan
+            Laporan warga langsung tampil di sini dan ditanggapi secara tertulis
+            oleh instansi.
           </p>
         </div>
 
@@ -129,6 +128,13 @@ export function CitizenReportSection({
           >
             {isSigningOut ? "Keluar..." : "Keluar"}
           </button>
+          <span aria-hidden="true">·</span>
+          <Link
+            href="/laporan-saya"
+            className="rounded font-semibold text-brand-blue hover:underline focus:outline-none focus:ring-2 focus:ring-brand-blue"
+          >
+            PantauLaporan
+          </Link>
         </p>
       )}
 
@@ -142,6 +148,17 @@ export function CitizenReportSection({
           }`}
         >
           {resultMessage.message}
+          {resultMessage.success && (
+            <>
+              {" "}
+              <Link
+                href="/laporan-saya"
+                className="font-semibold underline hover:no-underline"
+              >
+                Buka PantauLaporan
+              </Link>
+            </>
+          )}
         </div>
       )}
 
@@ -215,39 +232,19 @@ export function CitizenReportSection({
         </form>
       )}
 
-      {approvedReports.length === 0 ? (
+      {reports.length === 0 ? (
         <div className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center text-xs text-slate-500">
           Belum ada laporan warga untuk proyek ini.
         </div>
       ) : (
         <div className="space-y-4">
-          {approvedReports.map((report) => (
-            <article
+          {reports.map((report) => (
+            <CitizenReportCard
               key={report.id}
-              className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs"
-            >
-              <div className="flex items-center justify-between text-xs text-slate-500 mb-2">
-                <span className="font-semibold text-slate-700">Warga</span>
-                <span>
-                  {new Date(report.created_at).toLocaleDateString("id-ID")}
-                </span>
-              </div>
-              <p className="text-xs text-slate-800 leading-relaxed whitespace-pre-line">
-                {report.content}
-              </p>
-              {report.photo_path && (
-                <div className="mt-3">
-                  <a
-                    href={`${storageBaseUrl}/${report.photo_path}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:underline"
-                  >
-                    📷 Lihat Foto Lapangan ↗
-                  </a>
-                </div>
-              )}
-            </article>
+              report={report}
+              agencyName={agencyName}
+              reporterLabel="Warga"
+            />
           ))}
         </div>
       )}

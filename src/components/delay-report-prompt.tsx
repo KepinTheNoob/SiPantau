@@ -112,13 +112,13 @@ export function DelayReportPrompt({
             {remaining.map((project) => (
               <li
                 key={project.projectId}
-                className="flex flex-col gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-3 rounded-lg border border-red-200 bg-red-50 p-3 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div>
                   <p className="text-sm font-semibold text-slate-900">
                     {project.title}
                   </p>
-                  <p className="text-xs text-amber-900">
+                  <p className="text-xs text-red-800">
                     {project.hasPreviousReport
                       ? `Target revisi ${formatIsoDate(project.effectiveTargetDate)} juga sudah lewat`
                       : `Target ${formatIsoDate(project.originalTargetDate)} sudah lewat`}

@@ -3,6 +3,11 @@ import Link from "next/link";
 import type { Database } from "@/db/types";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getAdminServiceClient } from "@/server/admin-only/client";
+import {
+  findFilterCategory,
+  projectCategoryFilterGroups,
+} from "@/lib/project-categories";
+import { ProjectCategoryFilter } from "@/components/project-category-filter";
 
 type ProjectRow = Database["public"]["Tables"]["projects"]["Row"];
 
@@ -17,9 +22,10 @@ export default async function SuperAdminProjectsPage({
   readonly searchParams: Promise<{
     readonly createdBy?: string;
     readonly region?: string;
+    readonly kategori?: string;
   }>;
 }) {
-  const { createdBy, region } = await searchParams;
+  const { createdBy, region, kategori } = await searchParams;
   const supabase = await createSupabaseServerClient();
 
   const { data: agenciesData, error: agenciesError } = await supabase
@@ -135,13 +141,20 @@ export default async function SuperAdminProjectsPage({
     ...new Set((agenciesData ?? []).map((agency) => agency.region)),
   ].sort((left, right) => left.localeCompare(right));
 
+  const categoryGroups = projectCategoryFilterGroups(
+    projects.map((project) => project.category)
+  );
+
+  const selectedCategory = findFilterCategory(categoryGroups, kategori);
+
   const filteredProjects = projects.filter((project) => {
     const projectCreator = creatorByProjectId.get(project.id) ?? "system";
     const projectRegion = agencyById.get(project.agency_id)?.region;
 
     return (
       (!createdBy || projectCreator === createdBy) &&
-      (!region || projectRegion === region)
+      (!region || projectRegion === region) &&
+      (selectedCategory === undefined || project.category === selectedCategory)
     );
   });
 
@@ -181,6 +194,15 @@ export default async function SuperAdminProjectsPage({
             </option>
           ))}
         </select>
+
+        <ProjectCategoryFilter
+          id="filter-kategori"
+          name="kategori"
+          groups={categoryGroups}
+          defaultValue={selectedCategory ?? ""}
+          selectClassName="rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-xs"
+          hideLabel
+        />
 
         <button
           type="submit"

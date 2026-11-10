@@ -1,11 +1,8 @@
 import type { DbClient } from "./db";
 import { listDelayOverviews } from "./delay-reports";
-import {
-  ROAD_CATEGORIES,
-  ROAD_EVENT_CATEGORY,
-  isRoadCategory,
-} from "@/lib/project-categories";
-import { roadworkStatusFrom, type RoadworkProject } from "@/lib/roadworks";
+import { ROAD_EVENT_CATEGORY } from "@/lib/project-categories";
+import type { RoadworkProject } from "@/lib/roadworks";
+import { parseProjectStatus } from "@/lib/project-status";
 
 export type RoadworkLoadResult = {
   readonly projects: readonly RoadworkProject[];
@@ -30,7 +27,7 @@ function daysBetween(fromIsoDate: string, toIsoDate: string): number {
 }
 
 /**
- * Proyek PantauSekitar yang punya titik koordinat.
+ * Proyek PantauSekitar (semua kategori) yang punya titik koordinat.
  * Acara penutupan jalan yang sudah lewat tanggalnya tidak ditampilkan karena jalannya sudah dibuka.
  */
 export async function getRoadworkProjects(
@@ -41,7 +38,6 @@ export async function getRoadworkProjects(
     .select(
       "id, slug, title, category, location_name, lat, lng, target_end_date, agencies (name)"
     )
-    .in("category", [...ROAD_CATEGORIES])
     .not("lat", "is", null)
     .not("lng", "is", null);
 
@@ -59,7 +55,7 @@ export async function getRoadworkProjects(
     await Promise.all([
       supabase
         .from("project_stats")
-        .select("project_id, progress_percent, status_waktu")
+        .select("project_id, progress_percent, status_waktu, is_completed")
         .in("project_id", projectIds),
       listDelayOverviews(supabase, projectIds),
     ]);
@@ -81,7 +77,7 @@ export async function getRoadworkProjects(
   const projects: RoadworkProject[] = [];
 
   for (const row of rows) {
-    if (row.lat === null || row.lng === null || !isRoadCategory(row.category)) {
+    if (row.lat === null || row.lng === null) {
       continue;
     }
 
@@ -104,7 +100,8 @@ export async function getRoadworkProjects(
       agencyName: row.agencies?.name ?? null,
       lat: row.lat,
       lng: row.lng,
-      status: roadworkStatusFrom(stat?.status_waktu ?? null),
+      status: parseProjectStatus(stat?.status_waktu ?? null),
+      isCompleted: stat?.is_completed ?? false,
       progressPercent: Math.round(stat?.progress_percent ?? 0),
       targetEndDate,
       isTargetRevised: revisedTarget !== null,

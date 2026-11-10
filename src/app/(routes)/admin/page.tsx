@@ -2,6 +2,11 @@ import type { Metadata } from "next";
 import { requireAdmin } from "@/server/auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ProjectCompletionSummary } from "@/components/project-completion-summary";
+import {
+  UnansweredReportsNotice,
+  type UnansweredReportItem,
+} from "@/components/unanswered-reports-notice";
+import { listAgencyCitizenReports } from "@/server/models/citizen-reports";
 
 export const metadata: Metadata = {
   title: "Panel Admin Instansi - SIPANTAU",
@@ -17,7 +22,7 @@ export default async function AdminDashboardPage() {
       ? { data: [], error: null }
       : await supabase
           .from("project_stats")
-          .select("archived_at, status_waktu")
+          .select("archived_at, is_completed")
           .eq("agency_id", profile.agency_id)
           .is("archived_at", null);
 
@@ -29,8 +34,36 @@ export default async function AdminDashboardPage() {
 
   const projects = projectStatsResult.data ?? [];
 
+  const citizenReportsResult =
+    profile.agency_id === null
+      ? null
+      : await listAgencyCitizenReports(supabase, profile.agency_id);
+
+  if (citizenReportsResult !== null && citizenReportsResult.error !== null) {
+    throw new Error(
+      `Gagal memuat laporan warga: ${citizenReportsResult.error.message}`
+    );
+  }
+
+  // Urut dari laporan terlama: yang paling lama menunggu tampil paling atas.
+  const unansweredReports: UnansweredReportItem[] = (
+    citizenReportsResult?.data ?? []
+  ).flatMap((report) =>
+    report.citizen_report_replies.length > 0
+      ? []
+      : [
+          {
+            reportId: report.id,
+            projectId: report.projects.id,
+            projectTitle: report.projects.title,
+            content: report.content,
+            createdAt: report.created_at,
+          },
+        ]
+  );
+
   const completedProjects = projects.filter(
-    (project) => project.status_waktu === "selesai"
+    (project) => project.is_completed
   ).length;
 
   const agencyName = agency?.name ?? "Tidak terafiliasi dengan instansi";
@@ -90,6 +123,15 @@ export default async function AdminDashboardPage() {
             </p>
           </section>
         </div>
+
+        {citizenReportsResult !== null && (
+          <div className="mt-6">
+            <UnansweredReportsNotice
+              reports={unansweredReports}
+              now={Date.now()}
+            />
+          </div>
+        )}
 
         <div className="mt-6">
           <ProjectCompletionSummary

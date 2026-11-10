@@ -4,6 +4,8 @@ export type ProjectSnapshot = {
   readonly slug: string;
   readonly title: string;
   readonly description: string;
+  readonly objective: string;
+  readonly impact: string;
   readonly category: string;
   readonly location_name: string;
   readonly lat: number | null;

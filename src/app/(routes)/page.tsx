@@ -12,8 +12,20 @@ import { evidencePublicUrl } from "@/lib/storage-url";
 import { listCoverImages } from "@/server/models/project-images";
 import { listDelayOverviews } from "@/server/models/delay-reports";
 import { formatIsoDate } from "@/lib/dates";
+import {
+  PROJECT_STATUSES,
+  PROJECT_STATUS_DISPLAY,
+  completionNote,
+  parseProjectStatus,
+} from "@/lib/project-status";
 import { AgencyCombobox } from "@/components/agency-combobox";
 import { listVerifiedAgencies } from "@/server/models/agencies";
+import { listProjectCategories } from "@/server/models/projects";
+import {
+  findFilterCategory,
+  projectCategoryFilterGroups,
+} from "@/lib/project-categories";
+import { ProjectCategoryFilter } from "@/components/project-category-filter";
 
 export const metadata: Metadata = {
   title: "SIPANTAU - Portal Transparansi Proyek Pemerintah",
@@ -33,17 +45,17 @@ export default async function HomePage({
   readonly searchParams: Promise<{
     readonly page?: string;
     readonly status?: string;
-    readonly minBudget?: string;
-    readonly maxBudget?: string;
+    readonly anggaran?: string;
     readonly agency?: string;
+    readonly kategori?: string;
   }>;
 }) {
   const {
     page: rawPage,
     status,
-    minBudget,
-    maxBudget,
+    anggaran,
     agency: agencySlug,
+    kategori,
   } = await searchParams;
 
   const currentPage = Math.max(1, Number(rawPage) || 1);
@@ -51,8 +63,18 @@ export default async function HomePage({
 
   const supabase = await createSupabaseServerClient();
 
-  const { data: agenciesData } = await listVerifiedAgencies(supabase);
+  const [{ data: agenciesData }, { data: categoryRows }] = await Promise.all([
+    listVerifiedAgencies(supabase),
+    listProjectCategories(supabase),
+  ]);
+
   const agencies = agenciesData ?? [];
+
+  const categoryGroups = projectCategoryFilterGroups(
+    (categoryRows ?? []).map((row) => row.category)
+  );
+
+  const selectedCategory = findFilterCategory(categoryGroups, kategori);
 
   const selectedAgency = agencySlug
     ? (agencies.find((agency) => agency.slug === agencySlug) ?? null)
@@ -62,12 +84,14 @@ export default async function HomePage({
     .from("project_stats")
     .select("*, agencies (id, name, slug, region)", { count: "exact" });
 
-  if (status) {
-    // Opsi form memakai "tepat_waktu", sedangkan view project_stats menghasilkan "tepat waktu".
-    query = query.eq(
-      "status_waktu",
-      status === "tepat_waktu" ? "tepat waktu" : status
-    );
+  const selectedStatus = PROJECT_STATUSES.find((value) => value === status);
+
+  if (selectedStatus !== undefined) {
+    query = query.eq("status_waktu", selectedStatus);
+  }
+
+  if (selectedCategory !== undefined) {
+    query = query.eq("category", selectedCategory);
   }
 
   if (agencySlug) {
@@ -78,21 +102,12 @@ export default async function HomePage({
     );
   }
 
-  if (minBudget) {
-    const min = Number(minBudget);
+  // Urutan anggaran: "terendah" atau (bawaan) "tertinggi"; project_id menjaga urutan tetap stabil antarhalaman.
+  const budgetOrder = anggaran === "terendah" ? "terendah" : "tertinggi";
 
-    if (!Number.isNaN(min)) {
-      query = query.gte("budget_total", min);
-    }
-  }
-
-  if (maxBudget) {
-    const max = Number(maxBudget);
-
-    if (!Number.isNaN(max)) {
-      query = query.lte("budget_total", max);
-    }
-  }
+  query = query
+    .order("budget_total", { ascending: budgetOrder === "terendah" })
+    .order("project_id", { ascending: true });
 
   const { data: statsData, count } = await query.range(
     offset,
@@ -133,10 +148,10 @@ export default async function HomePage({
     const params = new URLSearchParams();
 
     for (const [key, value] of [
-      ["status", status],
-      ["minBudget", minBudget],
-      ["maxBudget", maxBudget],
+      ["status", selectedStatus],
+      ["anggaran", anggaran === "terendah" ? "terendah" : undefined],
       ["agency", agencySlug],
+      ["kategori", selectedCategory],
     ] as const) {
       if (value) {
         params.set(key, value);
@@ -200,58 +215,52 @@ export default async function HomePage({
               label="Instansi / Dinas"
             />
 
+            <ProjectCategoryFilter
+              id="filter-kategori"
+              name="kategori"
+              groups={categoryGroups}
+              defaultValue={selectedCategory ?? ""}
+              selectClassName="min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-base text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-brand-blue sm:text-xs"
+            />
+
             <div>
               <label
                 htmlFor="filter-status"
                 className="block font-semibold text-slate-700 mb-1"
               >
-                Status Waktu
+                Status Proyek
               </label>
               <select
                 id="filter-status"
                 name="status"
-                defaultValue={status ?? ""}
-                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-brand-blue focus:border-brand-blue"
+                defaultValue={selectedStatus ?? ""}
+                className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-base text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-brand-blue sm:text-xs"
               >
-                <option value="">Semua Status</option>
-                <option value="tepat_waktu">Tepat Waktu</option>
-                <option value="terlambat">Terlambat</option>
-                <option value="selesai">Selesai</option>
+                <option value="">Semua status</option>
+                {PROJECT_STATUSES.map((value) => (
+                  <option key={value} value={value}>
+                    {PROJECT_STATUS_DISPLAY[value].label}
+                  </option>
+                ))}
               </select>
             </div>
 
             <div>
               <label
-                htmlFor="filter-min"
+                htmlFor="filter-anggaran"
                 className="block font-semibold text-slate-700 mb-1"
               >
-                Min. Anggaran (Rp)
+                Urutkan Anggaran
               </label>
-              <input
-                id="filter-min"
-                name="minBudget"
-                type="number"
-                placeholder="0"
-                defaultValue={minBudget ?? ""}
-                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-brand-blue focus:border-brand-blue"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="filter-max"
-                className="block font-semibold text-slate-700 mb-1"
+              <select
+                id="filter-anggaran"
+                name="anggaran"
+                defaultValue={budgetOrder}
+                className="min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-base text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:border-brand-blue sm:text-xs"
               >
-                Maks. Anggaran (Rp)
-              </label>
-              <input
-                id="filter-max"
-                name="maxBudget"
-                type="number"
-                placeholder="5000000000"
-                defaultValue={maxBudget ?? ""}
-                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-brand-blue focus:border-brand-blue"
-              />
+                <option value="tertinggi">Tertinggi</option>
+                <option value="terendah">Terendah</option>
+              </select>
             </div>
 
             <div className="self-end flex items-center gap-2">
@@ -261,7 +270,10 @@ export default async function HomePage({
               >
                 Terapkan Filter
               </button>
-              {(status || minBudget || maxBudget || agencySlug) && (
+              {(selectedStatus !== undefined ||
+                selectedCategory !== undefined ||
+                budgetOrder === "terendah" ||
+                agencySlug) && (
                 <Link
                   href="/"
                   className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-600 hover:bg-slate-50 transition"
@@ -294,14 +306,11 @@ export default async function HomePage({
                   spentPercent - progress >= BUDGET_OVERRUN_THRESHOLD_PERCENT;
 
                 const agency = p.agencies;
-                const isCompleted = p.status_waktu === "selesai";
-                const isDelayed = p.status_waktu === "terlambat";
+                const projectStatus = parseProjectStatus(p.status_waktu);
+                const statusDisplay = PROJECT_STATUS_DISPLAY[projectStatus];
 
-                const statusBadgeStyle = isCompleted
-                  ? "bg-brand-green-light text-brand-green border border-brand-green/20"
-                  : isDelayed
-                    ? "bg-amber-50 text-amber-800 border border-amber-200"
-                    : "bg-brand-blue-light text-brand-blue border border-brand-blue/20";
+                const isDelayedOngoing =
+                  projectStatus === "terlambat" && !p.is_completed;
 
                 const cover = coverByProject.get(p.project_id);
                 const delay = delayByProject.get(p.project_id);
@@ -334,9 +343,9 @@ export default async function HomePage({
                           <span>Instansi Terverifikasi</span>
                         )}
                         <span
-                          className={`rounded px-2 py-0.5 text-xs font-semibold capitalize ${statusBadgeStyle}`}
+                          className={`shrink-0 rounded px-2 py-0.5 text-xs font-semibold ${statusDisplay.badgeClass}`}
                         >
-                          {p.status_waktu?.replace("_", " ") ?? "Tepat Waktu"}
+                          {statusDisplay.label}
                         </span>
                       </div>
 
@@ -349,11 +358,17 @@ export default async function HomePage({
                         </Link>
                       </h3>
 
-                      {isDelayed && (
-                        <p className="mt-2 text-xs font-semibold text-amber-800">
+                      {isDelayedOngoing && (
+                        <p className="mt-2 text-xs font-semibold text-red-700">
                           {delay?.latest_revised_target_date
                             ? `Target direvisi ke ${formatIsoDate(delay.latest_revised_target_date)}`
                             : "Belum ada penjelasan keterlambatan"}
+                        </p>
+                      )}
+
+                      {p.is_completed && p.completed_at !== null && (
+                        <p className="mt-2 text-xs font-semibold text-slate-700">
+                          {completionNote(p.completed_at, p.target_end_date)}
                         </p>
                       )}
 

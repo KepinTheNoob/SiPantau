@@ -88,6 +88,10 @@ function isoDateFromToday(offsetDays: number): string {
   return new Date(Date.now() + offsetDays * DAY_MS).toISOString().slice(0, 10);
 }
 
+function isoTimestampDaysAgo(days: number): string {
+  return new Date(Date.now() - days * DAY_MS).toISOString();
+}
+
 /** Tanggal hari Minggu berikutnya (untuk car free day). */
 function nextSundayOffset(): number {
   const day = new Date().getUTCDay();
@@ -113,6 +117,8 @@ type SeedRoadProject = {
   readonly slug: string;
   readonly title: string;
   readonly description: string;
+  readonly objective: string;
+  readonly impact: string;
   readonly category: string;
   readonly locationName: string;
   readonly lat: number;
@@ -133,6 +139,8 @@ async function seedRoadProject(project: SeedRoadProject): Promise<void> {
         slug: project.slug,
         title: project.title,
         description: project.description,
+        objective: project.objective,
+        impact: project.impact,
         category: project.category,
         location_name: project.locationName,
         lat: project.lat,
@@ -691,6 +699,10 @@ async function main() {
         title: "Pembangunan Jembatan Penghubung Kali Ciliwung Kampung Melayu",
         description:
           "Proyek pembangunan jembatan bentang lengkung di atas Kali Ciliwung untuk mengurai kemacetan Kampung Melayu - Jatinegara dan membuka akses kendaraan antarkelurahan. (Data demo untuk pengembangan.)",
+        objective:
+          "Menyediakan jalur kendaraan baru di atas Kali Ciliwung.\nMengurangi ketergantungan arus Kampung Melayu - Jatinegara pada satu jembatan lama yang sempit.",
+        impact:
+          "Kendaraan dari Kampung Melayu ke Jatinegara tidak perlu memutar lewat Jl. Matraman.\nAntrean di jembatan lama berkurang pada jam sibuk pagi dan sore.\nAmbulans dan pemadam kebakaran punya akses tambahan ke permukiman di bantaran sungai.",
         category: "Pembangunan Jalan & Jembatan",
         location_name: "Kampung Melayu, Jakarta Timur",
         lat: -6.2235,
@@ -759,27 +771,56 @@ async function main() {
     },
   ]);
 
-  // Laporan Warga Proyek 1
+  // Laporan Warga Proyek 1: langsung publik, satu sudah ditanggapi instansi, satu masih menunggu.
+  const citizenId = await findOrCreateUser(
+    "warga@sipantau.co.id",
+    "Password123!"
+  );
+
   await client.from("citizen_reports").delete().eq("project_id", proj1.id);
-  await client.from("citizen_reports").insert([
-    {
-      project_id: proj1.id,
-      reporter_name: "Budi Santoso",
-      reporter_contact: "budi@warga.id",
-      content:
-        "Progres lengkung jembatan sudah tersambung rapi. Rambu peringatan dan penerangan kerja terpasang dengan baik di malam hari.",
-      status: "approved",
-      moderated_at: "2026-07-20T08:00:00Z",
-    },
-    {
-      project_id: proj1.id,
-      reporter_name: "Ahmad Fauzi",
-      reporter_contact: "fauzi@gmail.com",
-      content:
-        "Truk material sempat menimbulkan antrean di jam sibuk pagi hari. Mohon pengaturan jadwal bongkar muat di luar jam padat.",
-      status: "pending",
-    },
-  ]);
+
+  const { data: proj1Reports, error: reportError } = await client
+    .from("citizen_reports")
+    .insert([
+      {
+        project_id: proj1.id,
+        reporter_id: citizenId,
+        content:
+          "Truk material sempat menimbulkan antrean di jam sibuk pagi hari. Mohon pengaturan jadwal bongkar muat di luar jam padat.",
+        created_at: "2026-07-18T01:30:00Z",
+      },
+      {
+        project_id: proj1.id,
+        reporter_id: citizenId,
+        content:
+          "Penerangan kerja di sisi Jatinegara padam sejak dua malam terakhir, pejalan kaki kesulitan melihat pembatas galian.",
+        created_at: isoTimestampDaysAgo(2),
+      },
+    ])
+    .select("id, content");
+
+  if (reportError || !proj1Reports) {
+    throw new Error(`Gagal membuat laporan warga: ${reportError?.message}`);
+  }
+
+  const truckReport = proj1Reports.find((report) =>
+    report.content.startsWith("Truk material")
+  );
+
+  if (truckReport !== undefined) {
+    const { error: replyError } = await client
+      .from("citizen_report_replies")
+      .insert({
+        report_id: truckReport.id,
+        responder_id: agencyAdminId,
+        body: "Terima kasih atas laporannya. Mulai 22 Juli bongkar muat material hanya dilakukan pukul 10.00–15.00 dan 21.00–04.00, di luar jam sibuk. Petugas pengatur lalu lintas juga kami tempatkan di pintu masuk proyek.",
+        created_at: "2026-07-20T08:00:00Z",
+      });
+
+    if (replyError) {
+      throw new Error(`Gagal membuat tanggapan laporan: ${replyError.message}`);
+    }
+  }
 
   // 4. Proyek 2: Revitalisasi Saluran Drainase Utama Kota
   const { data: proj2, error: errP2 } = await client
@@ -791,7 +832,11 @@ async function main() {
         title: "Revitalisasi Saluran Drainase Utama Kota",
         description:
           "Normalisasi dan perkuatan tanggul saluran pembuangan air utama guna menanggulangi genangan banjir musiman di kawasan permukiman padat.",
-        category: "Lingkungan",
+        objective:
+          "Memulihkan kapasitas saluran utama yang tertutup sedimen.\nMencegah air hujan meluap ke jalan dan permukiman.",
+        impact:
+          "Genangan di jalan sekitar Tanah Abang surut lebih cepat setelah hujan deras.\nRisiko banjir musiman di permukiman padat berkurang.",
+        category: "Lingkungan Hidup & Air",
         location_name: "Tanah Abang, Jakarta Pusat",
         lat: -6.2088,
         lng: 106.8136,
@@ -854,6 +899,10 @@ async function main() {
         title: "Pembangunan Rumah Susun Sewa (Rusunawa) Tahap 2",
         description:
           "Penyediaan hunian vertikal layak huni sebanyak 90 unit tipe 36 dilengkapi fasilitas ruang terbuka hijau dan sarana ramah difabel.",
+        objective:
+          "Menambah hunian sewa layak di Jakarta Timur.\nMenjaga biaya sewa tetap terjangkau bagi warga berpenghasilan rendah.",
+        impact:
+          "90 keluarga mendapat hunian layak dengan sewa terjangkau.\nTersedia ruang terbuka hijau dan fasilitas ramah difabel bagi penghuni.",
         category: "Perumahan",
         location_name: "Cakung, Jakarta Timur",
         lat: -6.188,
@@ -948,6 +997,10 @@ async function main() {
       description:
         "Pengupasan dan pelapisan ulang aspal dua lajur kiri arah Cawang. Pekerjaan malam hari pukul 22.00 - 05.00, satu lajur ditutup bergantian." +
         DEMO_NOTE,
+      objective:
+        "Mengganti lapisan aspal yang retak dan bergelombang di lajur kiri arah Cawang.\nMenyelesaikan perbaikan sebelum musim hujan.",
+      impact:
+        "Permukaan jalan lebih rata sehingga kendaraan tidak perlu mengerem mendadak di titik berlubang.\nRisiko kecelakaan sepeda motor di lajur kiri berkurang.",
       category: "Perbaikan Jalan",
       locationName: "Jl. Gatot Subroto, Jakarta Selatan",
       lat: -6.2297,
@@ -984,6 +1037,10 @@ async function main() {
       description:
         "Pembongkaran trotoar rusak dan saluran tepi jalan di sisi barat. Bahu jalan dipakai untuk material sehingga lajur kiri menyempit." +
         DEMO_NOTE,
+      objective:
+        "Memperbaiki trotoar yang rusak di sisi barat Jl. Raya Pasar Minggu.\nMembersihkan saluran tepi yang tersumbat.",
+      impact:
+        "Pejalan kaki, termasuk pengguna kursi roda, punya trotoar yang rata dengan ubin pemandu.\nAir hujan mengalir ke saluran tepi, tidak lagi menggenang di lajur kiri.",
       category: "Perbaikan Jalan",
       locationName: "Jl. Raya Pasar Minggu, Jakarta Selatan",
       lat: -6.27,
@@ -1016,6 +1073,10 @@ async function main() {
       description:
         "Flyover dua lajur di atas perlintasan sebidang. Arus kendaraan dialihkan ke jalur samping selama pengecoran pilar." +
         DEMO_NOTE,
+      objective:
+        "Memisahkan arus kendaraan dari perlintasan sebidang kereta di Tanjung Barat.\nMengurai antrean panjang setiap kali palang kereta tertutup.",
+      impact:
+        "Kendaraan tidak lagi tertahan setiap kali palang kereta tertutup.\nRisiko kecelakaan di perlintasan sebidang hilang untuk arus utama.",
       category: "Pembangunan Jalan & Jembatan",
       locationName: "Tanjung Barat, Jakarta Selatan",
       lat: -6.3075,
@@ -1049,6 +1110,10 @@ async function main() {
       description:
         "Penambahan satu lajur di kedua arah beserta trotoar baru. Seluruh lajur sudah dibuka untuk umum." +
         DEMO_NOTE,
+      objective:
+        "Menambah kapasitas Jl. Ciledug Raya ruas Kebayoran Lama.\nMelancarkan jalur utama dari Tangerang menuju Jakarta Selatan.",
+      impact:
+        "Satu lajur tambahan di kedua arah mengurangi antrean pada jam sibuk.\nTrotoar baru memberi ruang aman bagi pejalan kaki.",
       category: "Pembangunan Jalan & Jembatan",
       locationName: "Jl. Ciledug Raya, Jakarta Selatan",
       lat: -6.239,
@@ -1081,6 +1146,10 @@ async function main() {
       description:
         "Galian sistem buka-tutup per 50 meter di lajur lambat arah Senen untuk penanaman kabel tegangan menengah." +
         DEMO_NOTE,
+      objective:
+        "Memindahkan kabel listrik tegangan menengah dari tiang udara ke bawah tanah di Jl. Kramat Raya.\nMerapikan trotoar dari tiang dan kabel yang semrawut.",
+      impact:
+        "Pasokan listrik lebih andal karena kabel tidak terganggu cuaca atau pohon tumbang.\nTrotoar bebas tiang dan kabel menjuntai setelah pekerjaan selesai.",
       category: "Kabel Listrik Bawah Tanah",
       locationName: "Jl. Kramat Raya, Jakarta Pusat",
       lat: -6.187,
@@ -1109,6 +1178,10 @@ async function main() {
       description:
         "Jl. Jenderal Sudirman dan Jl. M.H. Thamrin ditutup untuk kendaraan bermotor pukul 06.00 - 09.00. Gunakan jalur alternatif lewat Jl. Kebon Sirih atau Jl. Rasuna Said." +
         DEMO_NOTE,
+      objective:
+        "Menyediakan ruang jalan bebas kendaraan bermotor setiap Minggu pagi.\nMemberi warga tempat berolahraga dan berkegiatan bersama.",
+      impact:
+        "Warga bisa berjalan, bersepeda, dan berolahraga dengan aman di jalan protokol.\nKualitas udara di koridor Sudirman - Thamrin membaik selama jam penutupan.",
       category: "Acara & Penutupan Jalan",
       locationName: "Bundaran HI, Jakarta Pusat",
       lat: -6.195,
@@ -1126,6 +1199,10 @@ async function main() {
       description:
         "Arus dari Jl. M.H. Thamrin menuju Harmoni dialihkan sejak pukul 10.00 sampai kegiatan selesai. Hindari kawasan Patung Kuda." +
         DEMO_NOTE,
+      objective:
+        "Mengamankan kegiatan penyampaian aspirasi di sekitar Patung Kuda.\nMengalihkan arus kendaraan agar peserta dan pengguna jalan tetap aman.",
+      impact:
+        "Peserta dan pengguna jalan terpisah sehingga risiko kecelakaan berkurang.\nPengendara bisa merencanakan rute alternatif lebih awal.",
       category: "Acara & Penutupan Jalan",
       locationName: "Jl. Medan Merdeka Barat, Jakarta Pusat",
       lat: -6.1772,
@@ -1210,6 +1287,10 @@ async function main() {
   console.log("");
   console.log("3. Admin Instansi (Dinas Bina Marga DKI):");
   console.log("   Email   : admin.binamarga@sipantau.co.id");
+  console.log("   Password: Password123!");
+  console.log("");
+  console.log("👤 Warga (pelapor):");
+  console.log("   Email   : warga@sipantau.co.id");
   console.log("   Password: Password123!");
   console.log("   URL     : http://localhost:3000/admin");
   console.log("");

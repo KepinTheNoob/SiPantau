@@ -14,3 +14,13 @@ export function nextIsoDate(isoDate: string): string {
 
   return next.toISOString().slice(0, 10);
 }
+
+/** Format timestamp (mis. `done_at`) menjadi "31 Des 2026" menurut tanggal WIB. */
+export function formatTimestampDate(timestamp: string): string {
+  return new Date(timestamp).toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "Asia/Jakarta",
+  });
+}

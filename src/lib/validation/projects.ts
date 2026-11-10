@@ -28,6 +28,25 @@ export const projectFormSchema = z.object({
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Format tanggal selesai harus YYYY-MM-DD."),
   lat: z.coerce.number().min(-90).max(90).optional().nullable(),
   lng: z.coerce.number().min(-180).max(180).optional().nullable(),
+  objective: z
+    .string()
+    .trim()
+    .max(2000, "Tujuan proyek maksimal 2000 karakter."),
+  impact: z.string().trim().max(2000, "Dampak proyek maksimal 2000 karakter."),
+});
+
+/** Proyek baru wajib menjelaskan tujuan dan dampaknya untuk warga. */
+export const createProjectSchema = projectFormSchema.extend({
+  objective: z
+    .string()
+    .trim()
+    .min(20, "Tujuan proyek minimal 20 karakter.")
+    .max(2000, "Tujuan proyek maksimal 2000 karakter."),
+  impact: z
+    .string()
+    .trim()
+    .min(20, "Dampak proyek minimal 20 karakter.")
+    .max(2000, "Dampak proyek maksimal 2000 karakter."),
 });
 
 export const updateProjectSchema = projectFormSchema.extend({

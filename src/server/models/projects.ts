@@ -19,3 +19,8 @@ export function deleteProjectById(db: DbClient, projectId: string) {
 export function findProjectById(db: DbClient, projectId: string) {
   return db.from("projects").select("*").eq("id", projectId).maybeSingle();
 }
+
+/** Kategori yang dipakai proyek; dipersempit dengan `.eq("agency_id", ...)` bila perlu. */
+export function listProjectCategories(db: DbClient) {
+  return db.from("projects").select("category");
+}

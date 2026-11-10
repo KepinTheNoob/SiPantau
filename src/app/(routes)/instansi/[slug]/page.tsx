@@ -5,6 +5,11 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { formatRupiah } from "@/lib/rupiah";
 import { SipantauLogo } from "@/components/sipantau-logo";
 import { PublicHeader } from "@/components/public-header";
+import {
+  PROJECT_STATUS_DISPLAY,
+  parseProjectStatus,
+} from "@/lib/project-status";
+import { formatIsoDate } from "@/lib/dates";
 
 export async function generateMetadata({
   params,
@@ -116,7 +121,9 @@ export default async function AgencyDetailPage({
                 {projects.map((p) => {
                   const progress = p.progress_percent ?? 0;
                   const spent = p.spent_total ?? 0;
-                  const isCompleted = p.status_waktu === "selesai";
+
+                  const statusDisplay =
+                    PROJECT_STATUS_DISPLAY[parseProjectStatus(p.status_waktu)];
 
                   return (
                     <article
@@ -126,15 +133,13 @@ export default async function AgencyDetailPage({
                       <div>
                         <div className="flex items-center justify-between text-xs text-slate-500 mb-2">
                           <span
-                            className={`rounded px-2 py-0.5 text-xs font-semibold capitalize ${
-                              isCompleted
-                                ? "bg-brand-green-light text-brand-green border border-brand-green/20"
-                                : "bg-slate-100 text-slate-700"
-                            }`}
+                            className={`rounded px-2 py-0.5 text-xs font-semibold ${statusDisplay.badgeClass}`}
                           >
-                            {p.status_waktu?.replace("_", " ") ?? "Tepat Waktu"}
+                            {statusDisplay.label}
                           </span>
-                          <span>Target: {p.target_end_date}</span>
+                          <span>
+                            Target: {formatIsoDate(p.target_end_date)}
+                          </span>
                         </div>
 
                         <h3 className="font-bold text-slate-900 text-base">

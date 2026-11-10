@@ -5,13 +5,14 @@ import type { Database } from "@/db/types";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { requireAgencyAccess } from "@/server/auth";
 import {
+  findCitizenReportInProject,
   insertCitizenReport,
-  setCitizenReportStatus,
+  insertCitizenReportReply,
 } from "@/server/models/citizen-reports";
-import { uploadEvidenceFile } from "@/server/models/storage";
+import { uploadNewEvidenceFile } from "@/server/models/storage";
 import {
   citizenReportFormSchema,
-  moderateReportSchema,
+  citizenReportReplySchema,
 } from "@/lib/validation/citizen-reports";
 
 export type ReportActionResult = {
@@ -20,6 +21,11 @@ export type ReportActionResult = {
   readonly reportId?: string;
 };
 
+const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+
+const ALLOWED_PHOTO_EXTENSIONS = ["jpg", "jpeg", "png", "webp"];
+
+/** Warga yang sudah masuk mengirim laporan; laporan langsung tampil di halaman publik proyek. */
 export async function submitCitizenReport(
   formData: FormData,
   client?: SupabaseClient<Database>
@@ -30,23 +36,31 @@ export async function submitCitizenReport(
   });
 
   if (!parsed.success) {
-    const errorMsg =
-      parsed.error.issues[0]?.message ?? "Isi laporan tidak valid.";
-
     return {
       success: false,
-      message: errorMsg,
+      message: parsed.error.issues[0]?.message ?? "Isi laporan tidak valid.",
     };
   }
 
   const { projectId, content } = parsed.data;
   const supabase = client ?? (await createSupabaseServerClient());
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (user === null) {
+    return {
+      success: false,
+      message: "Silakan masuk dulu untuk mengirim laporan.",
+    };
+  }
+
   let photoPath: string | null = null;
   const photo = formData.get("photo");
 
   if (photo instanceof File && photo.size > 0 && photo.name !== "undefined") {
-    if (photo.size > 5 * 1024 * 1024) {
+    if (photo.size > MAX_PHOTO_BYTES) {
       return {
         success: false,
         message: "Ukuran foto maksimal 5 MB.",
@@ -54,12 +68,23 @@ export async function submitCitizenReport(
     }
 
     const rawExt = photo.name.split(".").pop()?.toLowerCase() ?? "jpg";
-    const allowedExts = ["jpg", "jpeg", "png", "webp"];
-    const ext = allowedExts.includes(rawExt) ? rawExt : "jpg";
+    const ext = ALLOWED_PHOTO_EXTENSIONS.includes(rawExt) ? rawExt : "jpg";
 
-    photoPath = `reports/${projectId}/${Date.now()}.${ext}`;
+    // Folder per akun: storage hanya mengizinkan warga menulis ke reports/<id akunnya>/.
+    photoPath = `reports/${user.id}/${projectId}-${Date.now()}.${ext}`;
 
-    await uploadEvidenceFile(supabase, photoPath, photo);
+    const { error: uploadError } = await uploadNewEvidenceFile(
+      supabase,
+      photoPath,
+      photo
+    );
+
+    if (uploadError !== null) {
+      return {
+        success: false,
+        message: "Foto gagal diunggah. Coba lagi atau kirim tanpa foto.",
+      };
+    }
   }
 
   const reportId = crypto.randomUUID();
@@ -67,69 +92,79 @@ export async function submitCitizenReport(
   const { error: insertError } = await insertCitizenReport(supabase, {
     id: reportId,
     project_id: projectId,
+    reporter_id: user.id,
     content,
     photo_path: photoPath,
-    status: "pending",
   });
 
   if (insertError !== null) {
     return {
       success: false,
       message:
-        insertError.message ??
-        "Gagal mengirimkan laporan warga. Pastikan proyek aktif dan terverifikasi.",
+        "Gagal mengirim laporan. Pastikan proyek masih aktif dan dikelola instansi terverifikasi.",
     };
   }
 
   return {
     success: true,
     message:
-      "Terima kasih. Laporan Anda berhasil dikirim dan akan diverifikasi oleh tim pengawas instansi sebelum ditampilkan ke publik.",
+      "Terima kasih. Laporan Anda sudah tampil di halaman proyek ini. Tanggapan instansi bisa dipantau di menu PantauLaporan.",
     reportId,
   };
 }
 
-export async function moderateCitizenReport(
+/** Admin instansi menanggapi laporan warga dengan tulisan; tanggapan langsung tampil ke publik. */
+export async function replyToCitizenReport(
   formData: FormData,
   client?: SupabaseClient<Database>
 ): Promise<ReportActionResult> {
-  const parsed = moderateReportSchema.safeParse({
+  const parsed = citizenReportReplySchema.safeParse({
     reportId: formData.get("reportId"),
     projectId: formData.get("projectId"),
-    status: formData.get("status"),
+    body: formData.get("body"),
   });
 
   if (!parsed.success) {
     return {
       success: false,
-      message: "Data moderasi tidak valid.",
+      message: parsed.error.issues[0]?.message ?? "Tanggapan tidak valid.",
     };
   }
 
-  const { reportId, projectId, status } = parsed.data;
+  const { reportId, projectId, body } = parsed.data;
   await requireAgencyAccess(projectId, client);
 
   const supabase = client ?? (await createSupabaseServerClient());
 
-  const { error: updateError } = await setCitizenReportStatus(
+  const { data: report } = await findCitizenReportInProject(
     supabase,
     projectId,
-    reportId,
-    status
+    reportId
   );
 
-  if (updateError !== null) {
+  if (report === null) {
     return {
       success: false,
-      message: updateError.message ?? "Gagal memoderasi laporan warga.",
+      message: "Laporan tidak ditemukan pada proyek ini.",
+    };
+  }
+
+  const { error: insertError } = await insertCitizenReportReply(supabase, {
+    report_id: reportId,
+    body,
+  });
+
+  if (insertError !== null) {
+    return {
+      success: false,
+      message:
+        "Gagal menyimpan tanggapan. Pastikan instansi Anda sudah terverifikasi.",
     };
   }
 
   return {
     success: true,
-    message: `Status laporan warga berhasil diubah menjadi ${
-      status === "approved" ? "Disetujui" : "Ditolak"
-    }.`,
+    message: "Tanggapan tersimpan dan sudah tampil di halaman publik proyek.",
     reportId,
   };
 }

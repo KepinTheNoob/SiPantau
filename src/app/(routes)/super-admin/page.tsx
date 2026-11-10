@@ -25,7 +25,7 @@ export default async function SuperAdminDashboardPage() {
     supabase.from("agencies").select("*").order("name", { ascending: true }),
     supabase
       .from("project_stats")
-      .select("agency_id, archived_at, status_waktu")
+      .select("agency_id, archived_at, is_completed")
       .is("archived_at", null),
   ]);
 
@@ -46,7 +46,7 @@ export default async function SuperAdminDashboardPage() {
   const projects = projectStatsResult.data ?? [];
 
   const completedProjects = projects.filter(
-    (project) => project.status_waktu === "selesai"
+    (project) => project.is_completed
   ).length;
 
   const projectCountsByAgency = new Map<
@@ -62,7 +62,7 @@ export default async function SuperAdminDashboardPage() {
 
     counts.total += 1;
 
-    if (project.status_waktu === "selesai") {
+    if (project.is_completed) {
       counts.completed += 1;
     }
 
