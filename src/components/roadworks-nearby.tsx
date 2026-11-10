@@ -397,28 +397,6 @@ export function RoadworksNearby({
             </select>
           </div>
 
-          <div>
-            <label
-              htmlFor="roadworks-radius"
-              className="mb-1 block font-semibold text-slate-700"
-            >
-              Radius
-            </label>
-            <select
-              id="roadworks-radius"
-              value={radiusKm}
-              disabled={!hasLocation}
-              onChange={(event) => setRadiusKm(Number(event.target.value))}
-              className="min-h-11 cursor-pointer rounded-lg border border-slate-300 bg-white px-3 text-xs text-slate-800 focus:border-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
-            >
-              {ROADWORK_RADIUS_OPTIONS_KM.map((option) => (
-                <option key={option} value={option}>
-                  {option === 0 ? "Tanpa batas" : `${option} km`}
-                </option>
-              ))}
-            </select>
-          </div>
-
           <button
             type="button"
             onClick={handleLocate}
