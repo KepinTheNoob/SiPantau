@@ -686,7 +686,7 @@ describe("Supabase Schema and RLS Security Policies", () => {
     expect(stats).not.toBeNull();
     expect(Number(stats?.progress_percent)).toBe(75);
     expect(Number(stats?.spent_total)).toBe(50000000);
-    expect(stats?.status_waktu).toBe("tepat waktu");
+    expect(stats?.status_waktu).toBe("pengerjaan");
 
     // Create an unverified project under Agency C
     const { data: secretProject } = await serviceClient

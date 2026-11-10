@@ -8,6 +8,8 @@ import { BUDGET_OVERRUN_THRESHOLD_PERCENT } from "@/lib/constants";
 import { getSupabaseUrl } from "@/lib/supabase/env";
 import { ProjectMap } from "@/components/project-map";
 import { CitizenReportSection } from "@/components/citizen-report-section";
+import { listProjectCitizenReports } from "@/server/models/citizen-reports";
+import { toCitizenReportView } from "@/lib/citizen-reports";
 import { SipantauLogo } from "@/components/sipantau-logo";
 import { PublicHeader } from "@/components/public-header";
 import { PanelNavbar } from "@/components/panel-navbar";
@@ -24,7 +26,9 @@ import {
   loadDelayReportViews,
 } from "@/server/models/delay-reports";
 import { DelayExplanation } from "@/components/delay-explanation";
-import { formatIsoDate } from "@/lib/dates";
+import { ProjectObjectiveImpact } from "@/components/project-objective-impact";
+import { formatIsoDate, formatTimestampDate } from "@/lib/dates";
+import { CalendarIcon, MapPinIcon } from "@/components/icons";
 import { todayInJakarta } from "@/lib/validation/delay-reports";
 
 export async function generateMetadata({
@@ -108,14 +112,12 @@ export default async function ProjectDetailPage({
 
   const expenses = expensesData ?? [];
 
-  const { data: reportsData } = await supabase
-    .from("citizen_reports")
-    .select("*")
-    .eq("project_id", project.id)
-    .eq("status", "approved")
-    .order("created_at", { ascending: false });
+  const { data: reportsData } = await listProjectCitizenReports(
+    supabase,
+    project.id
+  );
 
-  const approvedReports = reportsData ?? [];
+  const citizenReports = (reportsData ?? []).map(toCitizenReportView);
 
   const [{ data: projectImagesData }, { data: landmarkImagesData }] =
     await Promise.all([
@@ -215,40 +217,51 @@ export default async function ProjectDetailPage({
               {project.description}
             </p>
 
-            <div className="mt-6 flex flex-wrap items-center gap-4 border-t border-slate-100 pt-4 text-xs text-slate-500">
-              <div>
-                Lokasi:{" "}
-                <span className="font-semibold text-slate-800">
+            <dl className="mt-6 flex flex-col gap-2 border-t border-slate-100 pt-4 text-sm text-slate-700 sm:flex-row sm:flex-wrap sm:gap-x-6">
+              <div className="flex items-start gap-2">
+                <dt className="mt-0.5 shrink-0 text-slate-500" title="Lokasi">
+                  <MapPinIcon className="h-4 w-4" />
+                  <span className="sr-only">Lokasi</span>
+                </dt>
+                <dd className="font-medium text-slate-800">
                   {project.location_name}
-                </span>
+                </dd>
               </div>
-              <div>•</div>
-              <div>
-                Mulai:{" "}
-                <span className="font-semibold text-slate-800">
-                  {project.start_date}
-                </span>
-              </div>
-              <div>•</div>
-              <div>
-                Target Selesai:{" "}
-                {revisedTargetDate === null ? (
-                  <span className="font-semibold text-slate-800">
-                    {formatIsoDate(project.target_end_date)}
+              <div className="flex items-start gap-2">
+                <dt
+                  className="mt-0.5 shrink-0 text-slate-500"
+                  title="Jadwal pengerjaan: mulai sampai target selesai"
+                >
+                  <CalendarIcon className="h-4 w-4" />
+                  <span className="sr-only">
+                    Jadwal pengerjaan, mulai sampai target selesai
                   </span>
-                ) : (
-                  <>
-                    <span className="text-slate-500 line-through">
-                      {formatIsoDate(project.target_end_date)}
-                    </span>{" "}
-                    <span className="font-semibold text-slate-800">
-                      {formatIsoDate(revisedTargetDate)} (direvisi)
-                    </span>
-                  </>
-                )}
+                </dt>
+                <dd className="font-medium text-slate-800">
+                  {formatIsoDate(project.start_date)} –{" "}
+                  {revisedTargetDate === null ? (
+                    formatIsoDate(project.target_end_date)
+                  ) : (
+                    <>
+                      <del className="font-normal text-slate-500">
+                        {formatIsoDate(project.target_end_date)}
+                      </del>{" "}
+                      {formatIsoDate(revisedTargetDate)}{" "}
+                      <span className="text-xs font-normal text-slate-500">
+                        (direvisi)
+                      </span>
+                    </>
+                  )}
+                </dd>
               </div>
-            </div>
+            </dl>
           </article>
+
+          <ProjectObjectiveImpact
+            objective={project.objective}
+            impact={project.impact}
+            agencyName={agency.name}
+          />
 
           <DelayExplanation
             agencyName={agency.name}
@@ -378,8 +391,8 @@ export default async function ProjectDetailPage({
                           </div>
                           {isDone && lm.done_at && (
                             <p className="text-xs text-slate-500 mt-1">
-                              Diselesaikan pada:{" "}
-                              {new Date(lm.done_at).toLocaleDateString("id-ID")}
+                              Diselesaikan pada{" "}
+                              {formatTimestampDate(lm.done_at)}
                             </p>
                           )}
                         </div>
@@ -425,7 +438,8 @@ export default async function ProjectDetailPage({
           <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs sm:p-8">
             <CitizenReportSection
               projectId={project.id}
-              approvedReports={approvedReports}
+              agencyName={agency.name}
+              reports={citizenReports}
               allowSubmission={panelRole === null}
               signedInEmail={signedInUser?.email ?? null}
             />

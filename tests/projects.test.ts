@@ -123,6 +123,14 @@ describe("Fase 3: Project and Landmark CRUD & Authorization", () => {
     formData.append("budget_total", "2500000000");
     formData.append("start_date", "2026-03-01");
     formData.append("target_end_date", "2026-12-31");
+    formData.append(
+      "objective",
+      "Mengurai kemacetan di simpang yang dilintasi rel kereta."
+    );
+    formData.append(
+      "impact",
+      "Waktu tempuh warga pada jam sibuk berkurang dan antrean di perlintasan hilang."
+    );
     formData.append("landmark_name", "Pondasi dan pilar");
     formData.append("landmark_weight", "40");
     formData.append("landmark_name", "Girder dan pengaspalan");
@@ -153,6 +161,31 @@ describe("Fase 3: Project and Landmark CRUD & Authorization", () => {
 
     expect(createdProj?.agency_id).toBe(agencyAId);
     expect(createdProj?.slug).toBe("pembangunan-flyover-baru");
+  });
+
+  it("admin A CANNOT create a project without objective and impact", async () => {
+    const formData = new FormData();
+    formData.append("title", "Proyek Tanpa Tujuan");
+    formData.append("slug", "proyek-tanpa-tujuan");
+    formData.append(
+      "description",
+      "Proyek ini sengaja dibuat tanpa tujuan untuk menguji validasi."
+    );
+    formData.append("category", "Perbaikan Jalan");
+    formData.append("location_name", "Jakarta Barat");
+    formData.append("budget_total", "100000000");
+    formData.append("start_date", "2026-03-01");
+    formData.append("target_end_date", "2026-12-31");
+    formData.append("landmark_name", "Pengaspalan");
+    formData.append("landmark_weight", "100");
+
+    const result = await createProject(formData, adminA.client);
+
+    expect(result.success).toBe(false);
+    expect(result.fieldErrors?.map((error) => error.field).sort()).toEqual([
+      "impact",
+      "objective",
+    ]);
   });
 
   it("admin A CANNOT create a project without any landmark", async () => {

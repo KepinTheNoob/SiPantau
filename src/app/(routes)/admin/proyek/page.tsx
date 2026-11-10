@@ -2,13 +2,23 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { requireAdmin } from "@/server/auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  findFilterCategory,
+  projectCategoryFilterGroups,
+} from "@/lib/project-categories";
+import { ProjectCategoryFilter } from "@/components/project-category-filter";
 
 export const metadata: Metadata = {
   title: "Daftar Proyek - Panel Admin | SIPANTAU",
   description: "Kelola proyek instansi pemerintah di portal SIPANTAU",
 };
 
-export default async function AdminProjectsPage() {
+export default async function AdminProjectsPage({
+  searchParams,
+}: {
+  readonly searchParams: Promise<{ readonly kategori?: string }>;
+}) {
+  const { kategori } = await searchParams;
   const { profile } = await requireAdmin();
 
   const supabase = await createSupabaseServerClient();
@@ -19,7 +29,18 @@ export default async function AdminProjectsPage() {
     .eq("agency_id", profile.agency_id ?? "")
     .order("created_at", { ascending: false });
 
-  const projectList = projects ?? [];
+  const allProjects = projects ?? [];
+
+  const categoryGroups = projectCategoryFilterGroups(
+    allProjects.map((project) => project.category)
+  );
+
+  const selectedCategory = findFilterCategory(categoryGroups, kategori);
+
+  const projectList =
+    selectedCategory === undefined
+      ? allProjects
+      : allProjects.filter((project) => project.category === selectedCategory);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
@@ -36,7 +57,40 @@ export default async function AdminProjectsPage() {
           </Link>
         </div>
 
-        {projectList.length === 0 ? (
+        {allProjects.length > 0 && (
+          <form
+            method="GET"
+            className="mb-4 flex flex-wrap items-end gap-2 text-xs"
+          >
+            <ProjectCategoryFilter
+              id="filter-kategori"
+              name="kategori"
+              groups={categoryGroups}
+              defaultValue={selectedCategory ?? ""}
+              selectClassName="min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-base text-slate-800 focus:border-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue sm:text-xs"
+            />
+            <button
+              type="submit"
+              className="min-h-11 rounded-lg bg-brand-blue px-4 font-semibold text-white shadow-xs transition hover:bg-brand-blue-hover focus:outline-none focus:ring-2 focus:ring-brand-blue focus:ring-offset-2"
+            >
+              Filter
+            </button>
+            {selectedCategory !== undefined && (
+              <Link
+                href="/admin/proyek"
+                className="flex min-h-11 items-center rounded-lg border border-slate-300 bg-white px-3 text-slate-600 transition hover:bg-slate-50"
+              >
+                Reset
+              </Link>
+            )}
+          </form>
+        )}
+
+        {allProjects.length > 0 && projectList.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center text-sm text-slate-500">
+            Belum ada proyek dengan kategori {selectedCategory}.
+          </div>
+        ) : projectList.length === 0 ? (
           <div className="rounded-xl border border-dashed border-slate-300 bg-white p-12 text-center">
             <h2 className="text-base font-semibold text-slate-900">
               Belum ada proyek

@@ -104,6 +104,49 @@ export async function createTestUserClient(
   };
 }
 
+/** Akun warga biasa (tanpa profil admin) yang sudah login. */
+export async function createCitizenTestClient(
+  email: string
+): Promise<TestUserContext> {
+  const adminClient = getServiceClient();
+  const password = "password123!";
+
+  const { data: userData, error: createError } =
+    await adminClient.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+    });
+
+  if (createError !== null || userData.user === null) {
+    throw new Error(
+      `Failed to create citizen ${email}: ${createError?.message}`
+    );
+  }
+
+  const { data: sessionData, error: signInError } =
+    await getAnonClient().auth.signInWithPassword({ email, password });
+
+  if (signInError !== null || sessionData.session === null) {
+    throw new Error(
+      `Failed to sign in citizen ${email}: ${signInError?.message}`
+    );
+  }
+
+  return {
+    userId: userData.user.id,
+    email,
+    client: createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false },
+      global: {
+        headers: {
+          Authorization: `Bearer ${sessionData.session.access_token}`,
+        },
+      },
+    }),
+  };
+}
+
 export async function cleanupTestData(): Promise<void> {
   const adminClient = getServiceClient();
 

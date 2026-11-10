@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { PublicHeader } from "@/components/public-header";
 import { RoadworksNearby } from "@/components/roadworks-nearby";
 import { SipantauLogo } from "@/components/sipantau-logo";
-import { ROAD_CATEGORIES } from "@/lib/project-categories";
+import { projectCategoryFilterGroups } from "@/lib/project-categories";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getRoadworkProjects } from "@/server/models/roadworks";
 
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   title:
     "PantauSekitar - Proyek dan Penutupan Jalan di Sekitar Anda | SIPANTAU",
   description:
-    "Lacak perbaikan jalan, pembangunan jalan dan jembatan, galian kabel bawah tanah, serta acara yang menutup jalan, lengkap dengan progres dan deadline-nya.",
+    "Lacak perbaikan jalan, pembangunan jalan dan jembatan, galian kabel bawah tanah, acara yang menutup jalan, serta proyek pemerintah lain di sekitar Anda, lengkap dengan progres dan deadline-nya.",
 };
 
 export default async function PantauSekitarPage() {
@@ -31,11 +31,9 @@ export default async function PantauSekitarPage() {
               </h1>
               <p className="mt-3 text-base leading-relaxed text-slate-600 sm:text-lg">
                 Sebelum berangkat, cek jalan mana yang sedang dikerjakan atau
-                ditutup di sekitar Anda, sampai kapan, dan sejauh apa
+                ditutup di sekitar Anda, juga proyek pemerintah lain seperti
+                sekolah dan saluran air: sampai kapan, dan sejauh apa
                 progresnya.
-              </p>
-              <p className="mt-4 text-sm text-slate-600">
-                Mencakup: {ROAD_CATEGORIES.join(", ")}.
               </p>
             </div>
           </div>
@@ -44,6 +42,9 @@ export default async function PantauSekitarPage() {
         <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
           <RoadworksNearby
             projects={roadworks.projects}
+            categoryGroups={projectCategoryFilterGroups(
+              roadworks.projects.map((project) => project.category)
+            )}
             loadFailed={roadworks.loadFailed}
           />
         </main>

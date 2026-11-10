@@ -1,4 +1,4 @@
-import { formatIsoDate } from "@/lib/dates";
+import { formatIsoDate, formatTimestampDate } from "@/lib/dates";
 
 export type DelayReportView = {
   readonly id: string;
@@ -27,7 +27,7 @@ function ReportBody({ report }: { readonly report: DelayReportView }) {
           {report.reasons.map((reason) => (
             <li
               key={reason}
-              className="rounded border border-amber-200 bg-white px-2 py-0.5 text-xs font-semibold text-amber-900"
+              className="rounded border border-red-200 bg-white px-2 py-0.5 text-xs font-semibold text-red-800"
             >
               {reason}
             </li>
@@ -51,8 +51,8 @@ function ReportBody({ report }: { readonly report: DelayReportView }) {
         </p>
       </div>
       <p className="text-xs text-slate-600">
-        Dilaporkan {formatIsoDate(report.createdAt)} · target selesai menjadi{" "}
-        {formatIsoDate(report.revisedTargetDate)}
+        Dilaporkan {formatTimestampDate(report.createdAt)} · target selesai
+        menjadi {formatIsoDate(report.revisedTargetDate)}
       </p>
     </div>
   );
@@ -60,7 +60,7 @@ function ReportBody({ report }: { readonly report: DelayReportView }) {
 
 /**
  * Penjelasan keterlambatan untuk warga: target awal vs terbaru, alasan, rencana, riwayat.
- * Tidak dirender bila proyek tepat waktu dan tidak pernah punya laporan.
+ * Tidak dirender bila proyek tidak terlambat dan tidak pernah punya laporan.
  */
 export function DelayExplanation({
   agencyName,
@@ -86,11 +86,11 @@ export function DelayExplanation({
   return (
     <section
       aria-labelledby="delay-explanation-title"
-      className="rounded-xl border border-amber-300 bg-amber-50 p-5 shadow-xs sm:p-6"
+      className="rounded-xl border border-red-200 bg-red-50 p-5 shadow-xs sm:p-6"
     >
       <h2
         id="delay-explanation-title"
-        className="text-base font-bold text-amber-950"
+        className="text-base font-bold text-red-900"
       >
         {isLate ? "Kenapa proyek ini terlambat?" : "Riwayat keterlambatan"}
       </h2>
@@ -110,7 +110,7 @@ export function DelayExplanation({
             ) : (
               <>
                 {formatIsoDate(latest.revisedTargetDate)}{" "}
-                <span className="text-xs font-normal text-amber-900">
+                <span className="text-xs font-normal text-red-800">
                   (mundur{" "}
                   {daysBetween(originalTargetDate, latest.revisedTargetDate)}{" "}
                   hari)
@@ -122,7 +122,7 @@ export function DelayExplanation({
       </dl>
 
       {needsNewReport && (
-        <p className="mt-4 rounded-lg border border-amber-400 bg-white p-3 text-sm font-semibold text-amber-950">
+        <p className="mt-4 rounded-lg border border-red-300 bg-white p-3 text-sm font-semibold text-red-900">
           {latest === undefined
             ? `${agencyName} belum memberikan penjelasan keterlambatan.`
             : `Target terbaru juga sudah lewat dan ${agencyName} belum memperbarui penjelasannya.`}
@@ -131,7 +131,7 @@ export function DelayExplanation({
 
       {latest !== undefined && (
         <div className="mt-4">
-          <p className="mb-3 text-xs font-semibold text-amber-950">
+          <p className="mb-3 text-xs font-semibold text-red-900">
             Penjelasan terbaru dari {agencyName}
           </p>
           <ReportBody report={latest} />
@@ -139,15 +139,15 @@ export function DelayExplanation({
       )}
 
       {older.length > 0 && (
-        <details className="mt-5 border-t border-amber-200 pt-4">
-          <summary className="min-h-11 cursor-pointer py-2 text-sm font-semibold text-amber-950">
+        <details className="mt-5 border-t border-red-200 pt-4">
+          <summary className="min-h-11 cursor-pointer py-2 text-sm font-semibold text-red-900">
             Penjelasan sebelumnya ({older.length})
           </summary>
           <ol className="mt-3 flex flex-col gap-5">
             {older.map((report) => (
               <li
                 key={report.id}
-                className="rounded-lg border border-amber-200 bg-white/60 p-4"
+                className="rounded-lg border border-red-200 bg-white/60 p-4"
               >
                 <ReportBody report={report} />
               </li>

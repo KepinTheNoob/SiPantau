@@ -10,10 +10,11 @@ import {
   updateProjectById,
 } from "@/server/models/projects";
 import { insertLandmarks } from "@/server/models/landmarks";
+import type { TableUpdate } from "@/server/models/db";
 import { ForbiddenError, UnverifiedAgencyError } from "@/server/auth/errors";
 import {
+  createProjectSchema,
   initialLandmarksSchema,
-  projectFormSchema,
   updateProjectSchema,
   archiveProjectSchema,
 } from "@/lib/validation/projects";
@@ -45,7 +46,7 @@ export async function createProject(
   formData: FormData,
   client?: SupabaseClient<Database>
 ): Promise<ProjectActionResult> {
-  const parsed = projectFormSchema.safeParse({
+  const parsed = createProjectSchema.safeParse({
     title: formData.get("title"),
     slug: formData.get("slug"),
     description: formData.get("description"),
@@ -56,6 +57,8 @@ export async function createProject(
     target_end_date: formData.get("target_end_date"),
     lat: formData.get("lat") || null,
     lng: formData.get("lng") || null,
+    objective: formData.get("objective") ?? "",
+    impact: formData.get("impact") ?? "",
   });
 
   const parsedLandmarks = initialLandmarksSchema.safeParse(
@@ -118,6 +121,8 @@ export async function createProject(
       target_end_date: data.target_end_date,
       lat: data.lat ?? null,
       lng: data.lng ?? null,
+      objective: data.objective,
+      impact: data.impact,
     }
   );
 
@@ -175,6 +180,8 @@ export async function updateProject(
     target_end_date: formData.get("target_end_date"),
     lat: formData.get("lat") || null,
     lng: formData.get("lng") || null,
+    objective: formData.get("objective") ?? "",
+    impact: formData.get("impact") ?? "",
   });
 
   if (!parsed.success) {
@@ -196,6 +203,20 @@ export async function updateProject(
 
   const supabase = client ?? (await createSupabaseServerClient());
 
+  // Tujuan & dampak hanya ditimpa bila field dikirim, supaya klien lama tidak mengosongkannya.
+  const narrativeUpdate: Pick<
+    TableUpdate<"projects">,
+    "objective" | "impact"
+  > = {};
+
+  if (formData.has("objective")) {
+    narrativeUpdate.objective = data.objective;
+  }
+
+  if (formData.has("impact")) {
+    narrativeUpdate.impact = data.impact;
+  }
+
   const { error: updateError } = await updateProjectById(
     supabase,
     data.projectId,
@@ -210,6 +231,7 @@ export async function updateProject(
       target_end_date: data.target_end_date,
       lat: data.lat ?? null,
       lng: data.lng ?? null,
+      ...narrativeUpdate,
     }
   );
 

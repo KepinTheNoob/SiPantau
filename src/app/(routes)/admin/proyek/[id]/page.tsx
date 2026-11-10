@@ -9,6 +9,9 @@ import { LandmarkManager } from "./landmark-manager";
 import { ExpenseManager } from "./expense-manager";
 import { ProjectGalleryManager } from "./project-gallery-manager";
 import { DelayReportManager } from "./delay-report-manager";
+import { CitizenReportManager } from "./citizen-report-manager";
+import { listProjectCitizenReports } from "@/server/models/citizen-reports";
+import { toCitizenReportView } from "@/lib/citizen-reports";
 import {
   findDelayOverview,
   listDelayReasonCategories,
@@ -42,7 +45,7 @@ export default async function AdminProjectDetailPage({
     throw error;
   }
 
-  const { project, agency } = access;
+  const { project, agency, profile } = access;
   const supabase = await createSupabaseServerClient();
 
   const { data: landmarksData } = await supabase
@@ -67,6 +70,7 @@ export default async function AdminProjectDetailPage({
     { data: delayOverview },
     delayReports,
     { data: delayCategories },
+    { data: citizenReportsData },
   ] = await Promise.all([
     listProjectImages(supabase, id),
     listLandmarkImages(
@@ -76,7 +80,10 @@ export default async function AdminProjectDetailPage({
     findDelayOverview(supabase, id),
     loadDelayReportViews(supabase, id),
     listDelayReasonCategories(supabase),
+    listProjectCitizenReports(supabase, id),
   ]);
+
+  const citizenReports = (citizenReportsData ?? []).map(toCitizenReportView);
 
   const isCompleted =
     landmarks.length > 0 && landmarks.every((landmark) => landmark.done);
@@ -126,6 +133,18 @@ export default async function AdminProjectDetailPage({
             />
           </section>
         )}
+
+        <section
+          id="laporan-warga"
+          className="scroll-mt-24 rounded-xl border border-slate-200 bg-white p-6 shadow-xs sm:p-8"
+        >
+          <CitizenReportManager
+            projectId={project.id}
+            agencyName={agency.name}
+            reports={citizenReports}
+            canReply={profile.role === "admin" && agency.verified}
+          />
+        </section>
 
         <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs sm:p-8">
           <ProjectGalleryManager

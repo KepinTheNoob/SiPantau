@@ -1,19 +1,20 @@
 import Link from "next/link";
 import { SipantauLogo } from "@/components/sipantau-logo";
 
-export type PublicNavSection = "proyek" | "pantau-sekitar";
+export type PublicNavSection = "proyek" | "pantau-sekitar" | "laporan-saya";
 
 const NAV_ITEMS: readonly {
   readonly section: PublicNavSection;
   readonly href: string;
   readonly label: string;
 }[] = [
-  { section: "proyek", href: "/", label: "Proyek" },
+  { section: "proyek", href: "/", label: "PantauProyek" },
   {
     section: "pantau-sekitar",
     href: "/pantau-sekitar",
     label: "PantauSekitar",
   },
+  { section: "laporan-saya", href: "/laporan-saya", label: "PantauLaporan" },
 ];
 
 /** Header halaman publik. `active` menandai menu halaman saat ini; null untuk halaman detail. */
@@ -45,7 +46,7 @@ export function PublicHeader({
 
         <nav
           aria-label="Menu utama"
-          className="order-last flex w-full gap-1 sm:order-none sm:ml-auto sm:w-auto"
+          className="order-last flex w-full gap-0.5 overflow-x-auto sm:order-none sm:ml-auto sm:w-auto sm:gap-1 sm:overflow-visible"
         >
           {NAV_ITEMS.map((item) => {
             const isActive = item.section === active;
@@ -55,7 +56,7 @@ export function PublicHeader({
                 key={item.section}
                 href={item.href}
                 aria-current={isActive ? "page" : undefined}
-                className={`inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-brand-blue ${
+                className={`inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-lg px-2 text-[13px] font-semibold sm:px-3 sm:text-sm transition focus:outline-none focus:ring-2 focus:ring-brand-blue ${
                   isActive
                     ? "bg-brand-blue-light text-brand-blue"
                     : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"

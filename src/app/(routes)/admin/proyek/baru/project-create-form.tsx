@@ -134,6 +134,66 @@ export function ProjectCreateForm() {
           )}
         </div>
 
+        <div className="sm:col-span-2">
+          <label
+            htmlFor="objective"
+            className="block text-sm font-medium text-slate-700"
+          >
+            Tujuan Proyek *
+          </label>
+          <p className="text-xs text-slate-500">
+            Masalah apa yang ingin diselesaikan proyek ini. Tulis satu poin per
+            baris; tiap baris tampil sebagai poin di halaman proyek.
+          </p>
+          <textarea
+            id="objective"
+            name="objective"
+            rows={4}
+            required
+            minLength={20}
+            maxLength={2000}
+            placeholder={
+              "Contoh:\nMengurai kemacetan di simpang Tanjung Barat\nMenghilangkan perlintasan sebidang kereta untuk arus utama"
+            }
+            className="mt-1 block w-full rounded border border-slate-300 px-3 py-2 text-base shadow-sm focus:border-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-800 sm:text-sm"
+          />
+          {getFieldError("objective") && (
+            <p className="mt-1 text-xs text-red-600">
+              {getFieldError("objective")}
+            </p>
+          )}
+        </div>
+
+        <div className="sm:col-span-2">
+          <label
+            htmlFor="impact"
+            className="block text-sm font-medium text-slate-700"
+          >
+            Dampak bagi Warga *
+          </label>
+          <p className="text-xs text-slate-500">
+            Apa yang berubah untuk warga setelah proyek selesai. Tulis satu poin
+            per baris.
+          </p>
+          <textarea
+            id="impact"
+            name="impact"
+            rows={4}
+            required
+            minLength={20}
+            maxLength={2000}
+            placeholder={
+              "Contoh:\nMengurangi kemacetan pada jam sibuk\nMeningkatkan aksesibilitas untuk pengguna sepeda"
+            }
+            className="mt-1 block w-full rounded border border-slate-300 px-3 py-2 text-base shadow-sm focus:border-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-800 sm:text-sm"
+          />
+          {getFieldError("impact") && (
+            <p className="mt-1 text-xs text-red-600">
+              {getFieldError("impact")}
+            </p>
+          )}
+        </div>
+
         <div>
           <label
             htmlFor="location_name"
