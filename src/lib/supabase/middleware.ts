@@ -84,7 +84,13 @@ export async function updateSession(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Protect /admin and /super-admin routes
-  if (pathname.startsWith("/admin") || pathname.startsWith("/super-admin")) {
+  // Cocokkan per segmen: "/admin-login" tidak boleh ikut dianggap halaman panel /admin.
+  const isPanelPath = ["/admin", "/super-admin"].some(
+    (panelRoot) =>
+      pathname === panelRoot || pathname.startsWith(`${panelRoot}/`)
+  );
+
+  if (isPanelPath) {
     if (user === null) {
       const url = request.nextUrl.clone();
       url.pathname = "/admin-login";
