@@ -55,3 +55,6 @@ export function hasAgencyReply(
 export const REPLY_MIN_LENGTH = 20;
 
 export const REPLY_MAX_LENGTH = 2000;
+
+/** Jumlah laporan warga per halaman di daftar laporan (publik, panel, dasbor). */
+export const CITIZEN_REPORTS_PER_PAGE = 5;

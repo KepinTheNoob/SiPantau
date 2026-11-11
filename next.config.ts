@@ -16,6 +16,10 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  // Alamat lama halaman login pengelola.
+  redirects: async () => [
+    { source: "/masuk", destination: "/admin-login", permanent: true },
+  ],
   headers: async () => {
     return [
       {

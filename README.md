@@ -108,7 +108,7 @@ Buka [http://localhost:3000](http://localhost:3000).
 | `/`                  | Daftar proyek publik dengan filter         | Publik         |
 | `/proyek/[slug]`     | Detail proyek, peta, landmark, pengeluaran | Publik         |
 | `/instansi/[slug]`   | Profil instansi dan daftar proyeknya       | Publik         |
-| `/masuk`             | Halaman login pengelola                    | —              |
+| `/admin-login`       | Halaman login pengelola                    | —              |
 | `/admin`             | Dashboard admin instansi                   | Admin Instansi |
 | `/admin/proyek`      | Daftar & kelola proyek                     | Admin Instansi |
 | `/admin/proyek/baru` | Buat proyek baru                           | Admin Instansi |

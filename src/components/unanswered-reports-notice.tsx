@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { formatTimestampDate } from "@/lib/dates";
+import { CITIZEN_REPORTS_PER_PAGE } from "@/lib/citizen-reports";
+import { PaginatedList } from "@/components/paginated-list";
 
 export type UnansweredReportItem = {
   readonly reportId: string;
@@ -8,8 +10,6 @@ export type UnansweredReportItem = {
   readonly content: string;
   readonly createdAt: string;
 };
-
-const MAX_LISTED = 5;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -43,7 +43,7 @@ function BellIcon({ className }: { readonly className: string }) {
   );
 }
 
-/** Notifikasi dasbor admin: laporan warga yang belum ditanggapi (yang menunggu paling lama di atas). */
+/** Notifikasi dasbor admin: semua laporan warga yang belum ditanggapi, berhalaman (yang menunggu paling lama di atas). */
 export function UnansweredReportsNotice({
   reports,
   now,
@@ -67,9 +67,6 @@ export function UnansweredReportsNotice({
       </section>
     );
   }
-
-  const listed = reports.slice(0, MAX_LISTED);
-  const remaining = reports.length - listed.length;
 
   return (
     <section
@@ -97,8 +94,13 @@ export function UnansweredReportsNotice({
         </div>
       </div>
 
-      <ul className="divide-y divide-slate-100">
-        {listed.map((report) => (
+      <PaginatedList
+        label="Laporan belum ditanggapi"
+        pageSize={CITIZEN_REPORTS_PER_PAGE}
+        listAs="ul"
+        listClassName="divide-y divide-slate-100"
+        navClassName="border-t border-slate-100 px-5 py-3"
+        items={reports.map((report) => (
           <li key={report.reportId}>
             <Link
               href={`/admin/proyek/${report.projectId}#laporan-warga`}
@@ -127,14 +129,7 @@ export function UnansweredReportsNotice({
             </Link>
           </li>
         ))}
-      </ul>
-
-      {remaining > 0 && (
-        <p className="border-t border-slate-100 px-5 py-3 text-xs text-slate-600">
-          Dan {remaining} laporan lain. Buka proyek terkait untuk melihat
-          semuanya.
-        </p>
-      )}
+      />
     </section>
   );
 }

@@ -97,10 +97,10 @@ export function CitizenReportCard({
           {report.replies.map((reply, index) => (
             <li
               key={reply.id}
-              className="rounded-lg border-l-4 border-brand-blue bg-brand-blue-light px-4 py-3"
+              className="rounded-lg border-l-4 border-slate-300 bg-slate-50 px-4 py-3"
             >
               <p className="text-xs text-slate-600">
-                <span className="font-semibold text-brand-blue">
+                <span className="font-semibold text-slate-900">
                   {index === 0
                     ? `Tanggapan ${agencyName}`
                     : `Tindak lanjut ${agencyName}`}

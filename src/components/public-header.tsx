@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { SipantauLogo } from "@/components/sipantau-logo";
+import { UserMenu } from "@/components/user-menu";
+import { HeaderSignInButton } from "@/components/header-sign-in-button";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { panelHomeForRole } from "@/lib/panel-routes";
+import { findProfileById } from "@/server/models/profiles";
 
-export type PublicNavSection = "proyek" | "pantau-sekitar" | "laporan-saya";
+export type PublicNavSection = "proyek" | "pantau-sekitar";
 
 const NAV_ITEMS: readonly {
   readonly section: PublicNavSection;
@@ -14,22 +19,31 @@ const NAV_ITEMS: readonly {
     href: "/pantau-sekitar",
     label: "PantauSekitar",
   },
-  { section: "laporan-saya", href: "/laporan-saya", label: "PantauLaporan" },
 ];
 
-/** Header halaman publik. `active` menandai menu halaman saat ini; null untuk halaman detail. */
-export function PublicHeader({
+/**
+ * Header halaman publik. `active` menandai menu halaman saat ini; null untuk halaman detail.
+ * Lebar dan padding sama di semua halaman supaya navbar tidak bergeser saat berpindah menu.
+ * Status masuk hanya ditampilkan di sini: tombol "Masuk" (popup masuk/daftar warga) berganti menjadi menu akun.
+ * PantauLaporan tidak ada di menu utama; warga membukanya dari menu akun setelah masuk.
+ */
+export async function PublicHeader({
   active,
-  containerClassName,
 }: {
   readonly active: PublicNavSection | null;
-  readonly containerClassName: string;
 }) {
+  const supabase = await createSupabaseServerClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data: profile } =
+    user === null ? { data: null } : await findProfileById(supabase, user.id);
+
   return (
     <header className="sticky top-0 z-10 border-b border-slate-200 bg-white shadow-xs">
-      <div
-        className={`mx-auto flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-2 sm:px-6 ${containerClassName}`}
-      >
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-2 sm:px-6 lg:px-8">
         <Link
           href="/"
           className="flex min-h-11 items-center rounded focus:outline-none focus:ring-2 focus:ring-brand-blue"
@@ -37,12 +51,14 @@ export function PublicHeader({
           <SipantauLogo size="md" />
         </Link>
 
-        <Link
-          href="/masuk"
-          className="rounded-lg border border-brand-blue/30 bg-white px-3.5 py-1.5 text-xs font-semibold text-brand-blue shadow-xs transition hover:bg-brand-blue-light focus:outline-none focus:ring-2 focus:ring-brand-blue sm:order-last"
-        >
-          Masuk Pengelola
-        </Link>
+        {user?.email !== undefined ? (
+          <UserMenu
+            email={user.email}
+            panelHref={profile === null ? null : panelHomeForRole(profile.role)}
+          />
+        ) : (
+          <HeaderSignInButton />
+        )}
 
         <nav
           aria-label="Menu utama"

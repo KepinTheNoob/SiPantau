@@ -87,7 +87,7 @@ export async function updateSession(request: NextRequest) {
   if (pathname.startsWith("/admin") || pathname.startsWith("/super-admin")) {
     if (user === null) {
       const url = request.nextUrl.clone();
-      url.pathname = "/masuk";
+      url.pathname = "/admin-login";
       url.searchParams.set("redirect", pathname);
 
       return withStaleCookiesCleared(NextResponse.redirect(url));
@@ -103,7 +103,7 @@ export async function updateSession(request: NextRequest) {
       aalData.currentLevel !== "aal2"
     ) {
       const url = request.nextUrl.clone();
-      url.pathname = "/masuk";
+      url.pathname = "/admin-login";
       url.searchParams.set("mfa", "1");
       url.searchParams.set("redirect", pathname);
 
@@ -111,10 +111,10 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  // Pengelola yang sudah login dan membuka /masuk diarahkan ke panelnya.
-  // Akun warga (tanpa profil) tetap boleh melihat halaman /masuk.
+  // Pengelola yang sudah login dan membuka /admin-login diarahkan ke panelnya.
+  // Akun warga (tanpa profil) tetap boleh melihat halaman /admin-login.
   if (
-    pathname === "/masuk" &&
+    pathname === "/admin-login" &&
     user !== null &&
     !request.nextUrl.searchParams.has("mfa")
   ) {

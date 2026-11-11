@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { requireAdmin } from "@/server/auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { ProjectCompletionSummary } from "@/components/project-completion-summary";
+import { AgencyYearSummary } from "@/components/agency-year-summary";
+import { listAgencyProjectSchedules } from "@/server/models/projects";
+import { listAgencyExpenseAmounts } from "@/server/models/expenses";
+import { jakartaYearRange, summarizeYear } from "@/lib/year-summary";
+import { todayInJakarta } from "@/lib/validation/delay-reports";
 import {
   UnansweredReportsNotice,
   type UnansweredReportItem,
@@ -17,22 +21,55 @@ export default async function AdminDashboardPage() {
   const { user, profile, agency } = await requireAdmin();
   const supabase = await createSupabaseServerClient();
 
-  const projectStatsResult =
-    profile.agency_id === null
-      ? { data: [], error: null }
-      : await supabase
-          .from("project_stats")
-          .select("archived_at, is_completed")
-          .eq("agency_id", profile.agency_id)
-          .is("archived_at", null);
+  const currentYear = Number(todayInJakarta().slice(0, 4));
 
-  if (projectStatsResult.error !== null) {
-    throw new Error(
-      `Gagal memuat ringkasan proyek: ${projectStatsResult.error.message}`
-    );
+  const [schedulesResult, statsResult, expensesResult] =
+    profile.agency_id === null
+      ? [
+          { data: [], error: null },
+          { data: [], error: null },
+          { data: [], error: null },
+        ]
+      : await Promise.all([
+          listAgencyProjectSchedules(supabase, profile.agency_id),
+          supabase
+            .from("project_stats")
+            .select("project_id, is_completed, completed_at")
+            .eq("agency_id", profile.agency_id)
+            .is("archived_at", null),
+          listAgencyExpenseAmounts(
+            supabase,
+            profile.agency_id,
+            jakartaYearRange(currentYear)
+          ),
+        ]);
+
+  const summaryError =
+    schedulesResult.error ?? statsResult.error ?? expensesResult.error;
+
+  if (summaryError !== null) {
+    throw new Error(`Gagal memuat ringkasan tahunan: ${summaryError.message}`);
   }
 
-  const projects = projectStatsResult.data ?? [];
+  const statsByProject = new Map(
+    (statsResult.data ?? []).map((stat) => [stat.project_id, stat])
+  );
+
+  const yearSummary = summarizeYear(
+    currentYear,
+    (schedulesResult.data ?? []).map((project) => {
+      const stat = statsByProject.get(project.id);
+
+      return {
+        startDate: project.start_date,
+        targetEndDate: project.target_end_date,
+        budgetTotal: project.budget_total,
+        isCompleted: stat?.is_completed ?? false,
+        completedAt: stat?.completed_at ?? null,
+      };
+    }),
+    (expensesResult.data ?? []).map((expense) => expense.amount)
+  );
 
   const citizenReportsResult =
     profile.agency_id === null
@@ -62,10 +99,6 @@ export default async function AdminDashboardPage() {
         ]
   );
 
-  const completedProjects = projects.filter(
-    (project) => project.is_completed
-  ).length;
-
   const agencyName = agency?.name ?? "Tidak terafiliasi dengan instansi";
   const isVerified = agency?.verified === true;
 
@@ -73,18 +106,16 @@ export default async function AdminDashboardPage() {
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
-            <h2 className="text-xs font-semibold uppercase text-slate-500">
+          <section className="rounded-xl bg-brand-blue p-6 text-white shadow-xs">
+            <h2 className="text-xs font-semibold uppercase text-blue-50">
               Profil Instansi
             </h2>
-            <p className="mt-2 text-lg font-bold text-slate-900">
-              {agencyName}
-            </p>
+            <p className="mt-2 text-lg font-bold text-white">{agencyName}</p>
             <div className="mt-3">
               <span
                 className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                   isVerified
-                    ? "bg-brand-green-light text-brand-green border border-brand-green/20"
+                    ? "bg-brand-green text-slate-900"
                     : "bg-amber-100 text-amber-800"
                 }`}
               >
@@ -92,7 +123,7 @@ export default async function AdminDashboardPage() {
               </span>
             </div>
             {!isVerified && (
-              <p className="mt-2 text-xs text-amber-700">
+              <p className="mt-2 text-xs text-blue-50">
                 Instansi Anda belum diverifikasi oleh Super Admin. Anda belum
                 dapat membuat proyek baru hingga verifikasi disetujui.
               </p>
@@ -124,6 +155,10 @@ export default async function AdminDashboardPage() {
           </section>
         </div>
 
+        <div className="mt-6">
+          <AgencyYearSummary summary={yearSummary} />
+        </div>
+
         {citizenReportsResult !== null && (
           <div className="mt-6">
             <UnansweredReportsNotice
@@ -132,13 +167,6 @@ export default async function AdminDashboardPage() {
             />
           </div>
         )}
-
-        <div className="mt-6">
-          <ProjectCompletionSummary
-            completed={completedProjects}
-            total={projects.length}
-          />
-        </div>
       </main>
     </div>
   );

@@ -68,7 +68,7 @@ export default async function AgencyDetailPage({
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between">
       <div>
-        <PublicHeader active={null} containerClassName="max-w-5xl" />
+        <PublicHeader active={null} />
 
         <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 flex flex-col gap-8">
           <div className="flex items-center gap-2 text-sm text-slate-500">
@@ -81,26 +81,26 @@ export default async function AgencyDetailPage({
             <span className="text-slate-800 font-semibold">{agency.name}</span>
           </div>
 
-          <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs sm:p-8">
+          <section className="rounded-xl bg-brand-blue p-6 text-white shadow-xs sm:p-8">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-green-light px-3 py-1 text-xs font-semibold text-brand-green border border-brand-green/20">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-green px-3 py-1 text-xs font-semibold text-slate-900">
                   ✓ Instansi Pemerintah Terverifikasi
                 </span>
-                <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
+                <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
                   {agency.name}
                 </h1>
-                <p className="mt-1 text-sm text-slate-600">
+                <p className="mt-1 text-sm text-blue-50">
                   Wilayah Kerja:{" "}
                   <span className="font-semibold">{agency.region}</span>
                 </p>
               </div>
 
-              <div className="rounded-lg border border-slate-100 bg-slate-50 p-4 text-center">
-                <span className="text-xs text-slate-500 block">
+              <div className="rounded-lg bg-white/10 p-4 text-center ring-1 ring-white/20">
+                <span className="block text-xs text-blue-50">
                   Total Proyek Terdata
                 </span>
-                <span className="text-2xl font-black text-brand-blue">
+                <span className="text-2xl font-black text-white">
                   {projects.length}
                 </span>
               </div>
@@ -154,36 +154,32 @@ export default async function AgencyDetailPage({
                         <div className="mt-4">
                           <div className="flex justify-between text-xs font-semibold text-slate-700 mb-1">
                             <span>Progres Fisik</span>
-                            <span className="font-bold text-brand-green">
+                            <span className="font-bold text-slate-900">
                               {progress}%
                             </span>
                           </div>
                           <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
                             <div
-                              className="h-full rounded-full bg-gradient-to-r from-brand-blue to-brand-green transition-all duration-300"
+                              className="h-full rounded-full bg-brand-green transition-all duration-300"
                               style={{ width: `${progress}%` }}
                             />
                           </div>
                         </div>
 
-                        <div className="mt-4 grid grid-cols-2 gap-2 border-t border-slate-100 pt-3 text-xs">
-                          <div>
-                            <span className="text-slate-500 block">
-                              Total Pagu
-                            </span>
-                            <span className="font-semibold text-slate-900 font-mono">
+                        <dl className="mt-4 flex flex-col gap-2 border-t border-slate-100 pt-3 text-xs">
+                          <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+                            <dt className="text-slate-500">Total Pagu</dt>
+                            <dd className="font-mono font-semibold text-slate-900">
                               {formatRupiah(p.budget_total)}
-                            </span>
+                            </dd>
                           </div>
-                          <div>
-                            <span className="text-slate-500 block">
-                              Terealisasi
-                            </span>
-                            <span className="font-semibold text-slate-900 font-mono">
+                          <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+                            <dt className="text-slate-500">Terealisasi</dt>
+                            <dd className="font-mono font-semibold text-slate-900">
                               {formatRupiah(spent)}
-                            </span>
+                            </dd>
                           </div>
-                        </div>
+                        </dl>
                       </div>
 
                       <div className="mt-6 border-t border-slate-100 pt-4">

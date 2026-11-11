@@ -20,14 +20,15 @@ const PANEL_STYLE: Readonly<
   >
 > = {
   objective: {
-    panel: "bg-brand-blue-light",
-    iconTile: "bg-brand-blue text-white shadow-brand-blue/30",
-    itemRing: "ring-brand-blue/15 hover:ring-brand-blue/40",
+    // Tujuan netral; hijau (aksen) disimpan untuk dampak yang dirasakan warga.
+    panel: "bg-slate-50",
+    iconTile: "bg-slate-900 text-white shadow-slate-900/20",
+    itemRing: "ring-slate-200",
   },
   impact: {
     panel: "bg-brand-green-light",
     iconTile: "bg-brand-green text-white shadow-brand-green/30",
-    itemRing: "ring-brand-green/20 hover:ring-brand-green/50",
+    itemRing: "ring-brand-green/25",
   },
 };
 
@@ -35,7 +36,7 @@ function ObjectiveMarker({ index }: { readonly index: number }) {
   return (
     <span
       aria-hidden="true"
-      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-blue text-[11px] font-bold text-white"
+      className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-900 text-[11px] font-bold text-white"
     >
       {index + 1}
     </span>

@@ -117,31 +117,22 @@ export default async function LaporanSayaPage() {
   return (
     <div className="flex min-h-screen flex-col justify-between bg-slate-50 text-slate-900">
       <div>
-        <PublicHeader active="laporan-saya" containerClassName="max-w-5xl" />
+        <PublicHeader active={null} />
 
-        <section className="border-b border-slate-200 bg-white py-10">
-          <div className="mx-auto max-w-5xl px-4 sm:px-6">
-            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
+        <section className="bg-brand-blue py-10 text-white">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <h1 className="text-3xl font-extrabold tracking-tight text-white">
               PantauLaporan
             </h1>
-            <p className="mt-2 max-w-2xl text-base text-slate-600">
+            <p className="mt-2 max-w-2xl text-base text-blue-50">
               Pantau laporan yang Anda kirim dan tanggapan tertulis dari
               instansi.
-              {user?.email !== undefined && (
-                <>
-                  {" "}
-                  Masuk sebagai{" "}
-                  <span className="font-semibold text-slate-800">
-                    {user.email}
-                  </span>
-                  .
-                </>
-              )}
             </p>
           </div>
         </section>
 
-        <main className="mx-auto flex max-w-5xl flex-col gap-10 px-4 py-10 sm:px-6">
+        {/* Lebar halaman sama dengan menu lain; daftar laporan dibatasi agar baris teks tetap nyaman dibaca. */}
+        <main className="mx-auto flex max-w-7xl flex-col gap-10 px-4 py-10 sm:px-6 lg:px-8 [&>*]:max-w-4xl">
           {user === null ? (
             <CitizenSignInPrompt />
           ) : error !== null ? (
@@ -187,7 +178,7 @@ export default async function LaporanSayaPage() {
       </div>
 
       <footer className="mt-4 border-t border-slate-200 bg-white py-8 text-center text-xs text-slate-500">
-        <div className="mx-auto flex max-w-5xl flex-col items-center gap-2 px-4">
+        <div className="mx-auto flex max-w-7xl flex-col items-center gap-2 px-4">
           <SipantauLogo size="sm" />
           <p className="mt-2">
             © 2026 SIPANTAU - Portal Transparansi Proyek Pemerintah RI.

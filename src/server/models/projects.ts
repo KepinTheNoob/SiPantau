@@ -24,3 +24,12 @@ export function findProjectById(db: DbClient, projectId: string) {
 export function listProjectCategories(db: DbClient) {
   return db.from("projects").select("category");
 }
+
+/** Jadwal dan pagu proyek aktif instansi, untuk ringkasan tahunan. */
+export function listAgencyProjectSchedules(db: DbClient, agencyId: string) {
+  return db
+    .from("projects")
+    .select("id, start_date, target_end_date, budget_total")
+    .eq("agency_id", agencyId)
+    .is("archived_at", null);
+}

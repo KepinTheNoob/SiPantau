@@ -169,7 +169,7 @@ export default async function ProjectDetailPage({
             isProjectDetail
           />
         ) : (
-          <PublicHeader active={null} containerClassName="max-w-5xl" />
+          <PublicHeader active={null} />
         )}
 
         <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 flex flex-col gap-8">
@@ -200,12 +200,12 @@ export default async function ProjectDetailPage({
             <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
               <Link
                 href={`/instansi/${agency.slug}`}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 bg-slate-100 rounded-full px-3 py-1 hover:bg-brand-blue-light hover:text-brand-blue transition"
+                className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 transition hover:bg-brand-blue-light hover:text-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue"
               >
-                🏛️ {agency.name} ({agency.region})
+                {agency.name} ({agency.region})
               </Link>
-              <span className="rounded-full bg-brand-blue-light px-3 py-1 text-xs font-semibold text-brand-blue border border-brand-blue/20">
-                Kategori: {project.category}
+              <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600">
+                {project.category}
               </span>
             </div>
 
@@ -302,14 +302,14 @@ export default async function ProjectDetailPage({
                 Capaian Progres Fisik
               </h2>
               <div className="mt-3 flex items-baseline gap-2">
-                <span className="text-3xl font-extrabold text-brand-green">
+                <span className="text-3xl font-extrabold text-slate-900">
                   {progressPercent}%
                 </span>
                 <span className="text-xs text-slate-500">selesai</span>
               </div>
               <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-brand-blue to-brand-green transition-all duration-300"
+                  className="h-full rounded-full bg-brand-green transition-all duration-300"
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
@@ -319,32 +319,37 @@ export default async function ProjectDetailPage({
               <h2 className="text-xs font-semibold uppercase text-slate-500">
                 Ringkasan Anggaran Proyek
               </h2>
-              <div className="mt-4 grid grid-cols-3 gap-4 border-t border-slate-100 pt-4">
-                <div>
-                  <span className="text-xs text-slate-500 block">
-                    Total Pagu
-                  </span>
-                  <span className="text-sm font-bold text-slate-900 font-mono">
+              <dl className="mt-4 divide-y divide-slate-100 border-t border-slate-100">
+                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 py-3">
+                  <dt className="text-xs text-slate-500">Total Pagu</dt>
+                  <dd className="text-sm font-bold text-slate-900 font-mono">
                     {formatRupiah(budgetTotal)}
-                  </span>
+                  </dd>
                 </div>
-                <div>
-                  <span className="text-xs text-slate-500 block">
-                    Terealisasi ({spentPercent}%)
-                  </span>
-                  <span className="text-sm font-bold text-slate-900 font-mono">
+                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 py-3">
+                  <dt className="flex items-center gap-1.5 text-xs text-slate-500">
+                    Terealisasi
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-bold ${
+                        isOverrun
+                          ? "bg-amber-100 text-amber-800"
+                          : "bg-brand-blue-light text-brand-blue"
+                      }`}
+                    >
+                      {spentPercent}%
+                    </span>
+                  </dt>
+                  <dd className="text-sm font-bold text-slate-900 font-mono">
                     {formatRupiah(spentTotal)}
-                  </span>
+                  </dd>
                 </div>
-                <div>
-                  <span className="text-xs text-slate-500 block">
-                    Sisa Anggaran
-                  </span>
-                  <span className="text-sm font-bold text-brand-green font-mono">
+                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 pt-3">
+                  <dt className="text-xs text-slate-500">Sisa Anggaran</dt>
+                  <dd className="text-sm font-bold text-slate-900 font-mono">
                     {formatRupiah(remainingBudget)}
-                  </span>
+                  </dd>
                 </div>
-              </div>
+              </dl>
             </div>
           </section>
 
@@ -384,7 +389,7 @@ export default async function ProjectDetailPage({
                               Bobot {lm.weight}%
                             </span>
                             {isDone && (
-                              <span className="rounded bg-brand-green-light px-2 py-0.5 text-xs font-semibold text-brand-green border border-brand-green/20">
+                              <span className="rounded border border-brand-green/30 bg-brand-green-light px-2 py-0.5 text-xs font-semibold text-emerald-800">
                                 Selesai
                               </span>
                             )}
@@ -403,9 +408,9 @@ export default async function ProjectDetailPage({
                               href={`${storageBaseUrl}/${lm.evidence_path}`}
                               target="_blank"
                               rel="noreferrer"
-                              className="inline-flex items-center gap-1.5 rounded-lg border border-brand-blue/30 bg-white px-3 py-1.5 text-xs font-semibold text-brand-blue hover:bg-brand-blue-light shadow-xs transition"
+                              className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold shadow-xs border border-slate-300 bg-white text-slate-700 transition hover:border-brand-blue hover:text-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue"
                             >
-                              📷 Bukti Dokumentasi ↗
+                              Bukti Dokumentasi ↗
                             </a>
                           </div>
                         )}

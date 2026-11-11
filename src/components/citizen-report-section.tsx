@@ -3,10 +3,11 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { submitCitizenReport } from "@/server/controllers/citizen-reports";
-import { citizenSignOutAction } from "@/server/controllers/citizen-auth";
 import { CitizenAuthDialog } from "@/components/citizen-auth-dialog";
 import Link from "next/link";
 import { CitizenReportCard } from "@/components/citizen-report-card";
+import { PaginatedList } from "@/components/paginated-list";
+import { CITIZEN_REPORTS_PER_PAGE } from "@/lib/citizen-reports";
 import type { CitizenReportView } from "@/lib/citizen-reports";
 
 export function CitizenReportSection({
@@ -27,7 +28,6 @@ export function CitizenReportSection({
   const [isPending, startTransition] = useTransition();
   const [showForm, setShowForm] = useState(false);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const [isSigningOut, startSignOut] = useTransition();
 
   function handleReportButton() {
     if (signedInEmail === null && !showForm) {
@@ -43,14 +43,6 @@ export function CitizenReportSection({
     setShowAuthDialog(false);
     setShowForm(true);
     router.refresh();
-  }
-
-  function handleSignOut() {
-    startSignOut(async () => {
-      await citizenSignOutAction();
-      setShowForm(false);
-      router.refresh();
-    });
   }
 
   const [resultMessage, setResultMessage] = useState<{
@@ -99,9 +91,13 @@ export function CitizenReportSection({
           <button
             type="button"
             onClick={handleReportButton}
-            className="min-h-11 cursor-pointer rounded-lg bg-brand-blue px-3.5 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-brand-blue-hover active:bg-brand-blue-hover/90 focus:outline-none focus:ring-2 focus:ring-brand-blue"
+            className={`min-h-11 cursor-pointer rounded-lg px-3.5 py-2 text-xs font-semibold shadow-xs ${
+              showForm
+                ? "border border-slate-300 bg-white text-slate-700 transition hover:border-brand-blue hover:text-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                : "bg-brand-blue text-white transition hover:bg-brand-blue-hover active:bg-brand-blue-hover/90 focus:outline-none focus:ring-2 focus:ring-brand-blue focus:ring-offset-2"
+            }`}
           >
-            {showForm ? "Tutup Form Laporan" : "📣 Buat Laporan Warga"}
+            {showForm ? "Tutup Form Laporan" : "Buat Laporan Warga"}
           </button>
         )}
       </div>
@@ -111,32 +107,6 @@ export function CitizenReportSection({
         onClose={() => setShowAuthDialog(false)}
         onSignedIn={handleSignedIn}
       />
-
-      {allowSubmission && signedInEmail !== null && (
-        <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-600">
-          <span>
-            Masuk sebagai{" "}
-            <span className="font-semibold text-slate-800">
-              {signedInEmail}
-            </span>
-          </span>
-          <button
-            type="button"
-            onClick={handleSignOut}
-            disabled={isSigningOut}
-            className="cursor-pointer rounded font-semibold text-brand-blue hover:underline focus:outline-none focus:ring-2 focus:ring-brand-blue disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isSigningOut ? "Keluar..." : "Keluar"}
-          </button>
-          <span aria-hidden="true">·</span>
-          <Link
-            href="/laporan-saya"
-            className="rounded font-semibold text-brand-blue hover:underline focus:outline-none focus:ring-2 focus:ring-brand-blue"
-          >
-            PantauLaporan
-          </Link>
-        </p>
-      )}
 
       {resultMessage !== null && (
         <div
@@ -237,8 +207,11 @@ export function CitizenReportSection({
           Belum ada laporan warga untuk proyek ini.
         </div>
       ) : (
-        <div className="space-y-4">
-          {reports.map((report) => (
+        <PaginatedList
+          label="Laporan warga"
+          pageSize={CITIZEN_REPORTS_PER_PAGE}
+          listClassName="space-y-4"
+          items={reports.map((report) => (
             <CitizenReportCard
               key={report.id}
               report={report}
@@ -246,7 +219,7 @@ export function CitizenReportSection({
               reporterLabel="Warga"
             />
           ))}
-        </div>
+        />
       )}
     </div>
   );

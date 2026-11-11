@@ -7,6 +7,7 @@ import {
   projectCategoryFilterGroups,
 } from "@/lib/project-categories";
 import { ProjectCategoryFilter } from "@/components/project-category-filter";
+import { ProjectRowActions } from "@/components/project-row-actions";
 
 export const metadata: Metadata = {
   title: "Daftar Proyek - Panel Admin | SIPANTAU",
@@ -174,20 +175,19 @@ export default async function AdminProjectsPage({
                             className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                               isArchived
                                 ? "bg-slate-100 text-slate-700"
-                                : "bg-brand-green-light text-brand-green border border-brand-green/20"
+                                : "bg-brand-green-light text-emerald-800 border border-brand-green/30"
                             }`}
                           >
                             {isArchived ? "Diarsipkan" : "Aktif"}
                           </span>
                         </td>
                         <td className="px-6 py-4 text-right whitespace-nowrap">
-                          <Link
-                            href={`/admin/proyek/${project.id}`}
-                            className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-brand-blue/30 bg-white px-3.5 py-1.5 text-xs font-semibold text-brand-blue shadow-xs hover:bg-brand-blue-light hover:border-brand-blue transition whitespace-nowrap"
-                          >
-                            <span>Kelola & Tahapan</span>
-                            <span aria-hidden="true">→</span>
-                          </Link>
+                          <ProjectRowActions
+                            projectId={project.id}
+                            projectTitle={project.title}
+                            manageHref={`/admin/proyek/${project.id}`}
+                            isArchived={isArchived}
+                          />
                         </td>
                       </tr>
                     );

@@ -3,8 +3,10 @@
 import { useId, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { CitizenReportCard } from "@/components/citizen-report-card";
+import { PaginatedList } from "@/components/paginated-list";
 import { replyToCitizenReport } from "@/server/controllers/citizen-reports";
 import {
+  CITIZEN_REPORTS_PER_PAGE,
   REPLY_MAX_LENGTH,
   REPLY_MIN_LENGTH,
   hasAgencyReply,
@@ -220,8 +222,11 @@ export function CitizenReportManager({
             {group.reports.length === 0 ? (
               <p className="text-sm text-slate-500">{group.emptyText}</p>
             ) : (
-              <div className="space-y-4">
-                {group.reports.map((report) => (
+              <PaginatedList
+                label={`Laporan ${group.title.toLowerCase()}`}
+                pageSize={CITIZEN_REPORTS_PER_PAGE}
+                listClassName="space-y-4"
+                items={group.reports.map((report) => (
                   <ReportWithReply
                     key={report.id}
                     projectId={projectId}
@@ -230,7 +235,7 @@ export function CitizenReportManager({
                     canReply={canReply}
                   />
                 ))}
-              </div>
+              />
             )}
           </section>
         ))

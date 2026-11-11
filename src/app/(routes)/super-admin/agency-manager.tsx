@@ -77,7 +77,7 @@ export function AgencyManager({
                   <span
                     className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                       agency.verified
-                        ? "bg-brand-green-light text-brand-green border border-brand-green/20"
+                        ? "bg-brand-green-light text-emerald-800 border border-brand-green/30"
                         : "bg-amber-100 text-amber-800"
                     }`}
                   >
@@ -92,7 +92,7 @@ export function AgencyManager({
                     className={`rounded-lg px-3 py-1 text-xs font-semibold transition ${
                       agency.verified
                         ? "border border-red-300 bg-white text-red-700 hover:bg-red-50"
-                        : "bg-brand-green text-white hover:bg-brand-green-hover shadow-xs"
+                        : "bg-brand-blue text-white hover:bg-brand-blue-hover shadow-xs"
                     }`}
                   >
                     {agency.verified

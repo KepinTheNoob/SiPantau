@@ -147,5 +147,5 @@ export async function loginAction(
 export async function logoutAction(): Promise<void> {
   const supabase = await createSupabaseServerClient();
   await supabase.auth.signOut();
-  redirect("/masuk");
+  redirect("/admin-login");
 }
