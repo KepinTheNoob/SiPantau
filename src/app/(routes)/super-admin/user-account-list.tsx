@@ -219,7 +219,7 @@ export function UserAccountList({
         </label>
         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
           <svg
-            className="h-4 w-4 text-slate-400"
+            className="h-4 w-4 text-slate-500"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -239,13 +239,13 @@ export function UserAccountList({
           value={searchQuery}
           onChange={(event) => setSearchQuery(event.target.value)}
           placeholder="Cari berdasarkan email, nama instansi, wilayah, atau ID..."
-          className="block w-full rounded-lg border border-slate-300 bg-white py-2 pl-9 pr-8 text-xs text-slate-900 placeholder-slate-400 focus:border-brand-blue focus:outline-hidden focus:ring-1 focus:ring-brand-blue"
+          className="block w-full rounded-lg border border-slate-300 bg-white py-2 pl-9 pr-8 text-xs text-slate-900 placeholder-slate-500 focus:border-brand-blue focus:outline-hidden focus:ring-1 focus:ring-brand-blue"
         />
         {searchQuery !== "" && (
           <button
             type="button"
             onClick={() => setSearchQuery("")}
-            className="absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-400 hover:text-slate-600 text-xs font-semibold"
+            className="absolute inset-y-0 right-0 flex items-center pr-2.5 text-slate-500 hover:text-slate-600 text-xs font-semibold"
             aria-label="Bersihkan pencarian"
           >
             ✕
@@ -276,7 +276,12 @@ export function UserAccountList({
         </div>
       ) : (
         <div className="overflow-hidden rounded-lg border border-slate-200">
-          <div className="overflow-x-auto">
+          <div
+            role="region"
+            aria-label="Tabel akun pengguna"
+            tabIndex={0}
+            className="focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue overflow-x-auto"
+          >
             <table className="min-w-full divide-y divide-slate-200 text-left text-xs">
               <thead className="bg-slate-50 font-semibold text-slate-700">
                 <tr>
@@ -334,7 +339,7 @@ export function UserAccountList({
                                 {acc.email}
                               </div>
                             )}
-                            <div className="font-mono text-[10px] text-slate-400">
+                            <div className="font-mono text-[10px] text-slate-500">
                               ID: {acc.id.slice(0, 8)}...
                             </div>
                           </div>
@@ -391,7 +396,7 @@ export function UserAccountList({
                             )}
                           </div>
                         ) : (
-                          <span className="text-slate-400 italic">
+                          <span className="text-slate-500 italic">
                             Pusat (Semua Instansi)
                           </span>
                         )}

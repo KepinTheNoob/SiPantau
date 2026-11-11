@@ -25,7 +25,7 @@ export function ProjectCompletionSummary({
             Capaian proyek aktif berdasarkan penyelesaian seluruh tahapan.
           </p>
         </div>
-        <span className="rounded-full bg-brand-blue-light px-3 py-1 text-xs font-bold text-brand-blue">
+        <span className="rounded-full bg-brand-blue-light px-3 py-1 text-xs font-bold text-brand-blue-hover">
           {completionPercent}% selesai
         </span>
       </div>

@@ -290,9 +290,9 @@ export function LandmarkManager({
                     </span>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h4 className="font-semibold text-slate-900">
+                        <h3 className="font-semibold text-slate-900">
                           {lm.name}
-                        </h4>
+                        </h3>
                         <span className="rounded bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700">
                           Bobot {lm.weight}%
                         </span>
@@ -303,7 +303,7 @@ export function LandmarkManager({
                         )}
                       </div>
                       {isDone && lm.done_at && (
-                        <p className="mt-1 text-xs text-slate-400">
+                        <p className="mt-1 text-xs text-slate-500">
                           Selesai pada:{" "}
                           {new Date(lm.done_at).toLocaleDateString("id-ID")}
                         </p>
@@ -318,7 +318,7 @@ export function LandmarkManager({
                       onClick={() => setEditingLandmark(lm)}
                       aria-label={`Edit tahapan ${lm.name}`}
                       title="Edit tahapan"
-                      className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-brand-blue/20 bg-brand-blue-light text-brand-blue transition hover:border-brand-blue/40 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-brand-blue/30 disabled:opacity-50"
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-brand-blue/20 bg-brand-blue-light text-brand-blue-hover transition hover:border-brand-blue/40 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-brand-blue/30 disabled:opacity-50"
                     >
                       <svg
                         aria-hidden="true"

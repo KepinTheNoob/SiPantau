@@ -80,9 +80,9 @@ export default async function SuperAdminAuditHistoryPage({
   return (
     <main className="mx-auto flex min-h-screen max-w-7xl flex-col gap-6 bg-slate-50 px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
       <div>
-        <h2 className="text-xl font-bold tracking-tight">
+        <h1 className="text-xl font-bold tracking-tight">
           Riwayat Mutasi Seluruh Instansi
-        </h2>
+        </h1>
         <p className="mt-1 text-sm text-slate-600">
           Catatan perubahan data proyek, tahapan, dan realisasi anggaran.
         </p>
@@ -91,6 +91,7 @@ export default async function SuperAdminAuditHistoryPage({
       <form method="GET" className="flex flex-wrap items-center gap-2">
         <select
           name="agencyId"
+          aria-label="Filter instansi"
           defaultValue={agencyId ?? ""}
           className="rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-xs"
         >
@@ -104,6 +105,7 @@ export default async function SuperAdminAuditHistoryPage({
 
         <select
           name="action"
+          aria-label="Filter jenis aksi"
           defaultValue={action ?? ""}
           className="rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-xs"
         >

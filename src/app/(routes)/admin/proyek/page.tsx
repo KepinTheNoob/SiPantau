@@ -111,7 +111,12 @@ export default async function AdminProjectsPage({
           </div>
         ) : (
           <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs">
-            <div className="overflow-x-auto">
+            <div
+              role="region"
+              aria-label="Tabel daftar proyek"
+              tabIndex={0}
+              className="focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue overflow-x-auto"
+            >
               <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
                 <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-600">
                   <tr>
@@ -159,7 +164,7 @@ export default async function AdminProjectsPage({
                         </td>
                         <td className="px-6 py-4 text-slate-600">
                           <div>{project.category}</div>
-                          <div className="text-xs text-slate-400">
+                          <div className="text-xs text-slate-500">
                             {project.location_name}
                           </div>
                         </td>

@@ -105,6 +105,9 @@ export default async function AdminDashboardPage() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <h1 className="mb-6 text-xl font-bold tracking-tight text-slate-900">
+          Dashboard
+        </h1>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           <section className="rounded-xl bg-brand-blue p-6 text-white shadow-xs">
             <h2 className="text-xs font-semibold uppercase text-blue-50">
