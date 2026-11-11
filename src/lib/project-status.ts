@@ -27,16 +27,17 @@ export const PROJECT_STATUS_DISPLAY: Readonly<
   pengerjaan: {
     label: "Pengerjaan",
     description: "Sedang dikerjakan, belum melewati target",
-    markerColor: "#0d6be3",
-    badgeClass:
-      "bg-brand-blue-light text-brand-blue border border-brand-blue/20",
+    // Abu-abu, selaras dengan badge netral; biru disimpan untuk elemen interaktif.
+    markerColor: "#64748b",
+    // Netral: biru dipakai untuk elemen yang bisa diklik, bukan status.
+    badgeClass: "bg-slate-100 text-slate-700 border border-slate-200",
   },
   tepat_waktu: {
     label: "Tepat Waktu",
     description: "Selesai sebelum atau pada target",
     markerColor: "#0abc8f",
     badgeClass:
-      "bg-brand-green-light text-brand-green border border-brand-green/20",
+      "bg-brand-green-light text-emerald-800 border border-brand-green/30",
   },
   terlambat: {
     label: "Terlambat",

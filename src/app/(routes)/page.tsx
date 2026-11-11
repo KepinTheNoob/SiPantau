@@ -166,19 +166,18 @@ export default async function HomePage({
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between">
       <div>
-        <PublicHeader active="proyek" containerClassName="max-w-7xl" />
+        <PublicHeader active="proyek" />
 
-        <section className="border-b border-slate-200 bg-white py-12 sm:py-16">
+        <section className="bg-brand-blue py-12 text-white sm:py-16">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl">
-              <div className="inline-flex items-center gap-2 rounded-full bg-brand-blue-light px-3 py-1 text-xs font-semibold text-brand-blue border border-brand-blue/20 mb-4">
-                <span>🏛️</span>
-                <span>Portal Resmi Transparansi Anggaran & Progres Fisik</span>
-              </div>
-              <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
+              <p className="mb-4 inline-flex rounded-full bg-brand-green px-3 py-1 text-xs font-semibold text-slate-900">
+                Portal Resmi Transparansi Anggaran & Progres Fisik
+              </p>
+              <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl">
                 Pantau Proyek Pembangunan Pemerintah RI
               </h1>
-              <p className="mt-4 text-base text-slate-600 sm:text-lg leading-relaxed">
+              <p className="mt-4 text-base leading-relaxed text-blue-50 sm:text-lg">
                 Masyarakat berhak mengetahui setiap rupiah anggaran publik yang
                 digunakan. Pantau tahapan proyek, bukti verifikasi dokumentasi,
                 dan kesesuaian anggaran belanja secara akuntabel.
@@ -266,7 +265,7 @@ export default async function HomePage({
             <div className="self-end flex items-center gap-2">
               <button
                 type="submit"
-                className="rounded-lg bg-brand-blue px-4 py-2 font-semibold text-white hover:bg-brand-blue-hover shadow-xs transition focus:outline-none focus:ring-2 focus:ring-brand-blue focus:ring-offset-2"
+                className="min-h-11 cursor-pointer rounded-lg bg-brand-blue px-4 font-semibold text-white shadow-xs transition hover:bg-brand-blue-hover focus:outline-none focus:ring-2 focus:ring-brand-blue focus:ring-offset-2"
               >
                 Terapkan Filter
               </button>
@@ -276,7 +275,7 @@ export default async function HomePage({
                 agencySlug) && (
                 <Link
                   href="/"
-                  className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-600 hover:bg-slate-50 transition"
+                  className="inline-flex min-h-11 items-center rounded-lg px-3 font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-blue"
                 >
                   Reset
                 </Link>
@@ -318,7 +317,7 @@ export default async function HomePage({
                 return (
                   <article
                     key={p.project_id}
-                    className="flex flex-col justify-between overflow-hidden rounded-xl border border-slate-200 bg-white p-6 shadow-xs transition hover:border-brand-blue/40 hover:shadow-md"
+                    className="group relative flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white p-6 shadow-xs transition hover:border-brand-blue/50 hover:shadow-md focus-within:ring-2 focus-within:ring-brand-blue"
                   >
                     <div>
                       {cover !== undefined && (
@@ -331,11 +330,11 @@ export default async function HomePage({
                           className="-mx-6 -mt-6 mb-4 aspect-video w-[calc(100%+3rem)] max-w-none bg-slate-100 object-cover"
                         />
                       )}
-                      <div className="flex items-center justify-between gap-2 text-xs text-slate-500 mb-2">
+                      <div className="mb-2 flex items-start justify-between gap-2 text-xs text-slate-500">
                         {agency ? (
                           <Link
                             href={`/instansi/${agency.slug}`}
-                            className="font-medium text-slate-700 hover:text-brand-blue hover:underline"
+                            className="relative z-10 font-medium text-slate-600 hover:text-brand-blue hover:underline"
                           >
                             {agency.name}
                           </Link>
@@ -350,9 +349,10 @@ export default async function HomePage({
                       </div>
 
                       <h3 className="text-base font-bold text-slate-900 line-clamp-2">
+                        {/* Area klik judul diperluas menutupi seluruh kartu; link instansi tetap di atasnya (z-10). */}
                         <Link
                           href={`/proyek/${p.slug}`}
-                          className="hover:text-brand-blue transition"
+                          className="transition group-hover:text-brand-blue after:absolute after:inset-0 after:content-[''] focus:outline-none"
                         >
                           {p.title}
                         </Link>
@@ -373,36 +373,47 @@ export default async function HomePage({
                       )}
 
                       <div className="mt-5">
-                        <div className="flex justify-between text-xs font-semibold text-slate-700 mb-1">
-                          <span>Progres Fisik</span>
-                          <span className="font-bold text-brand-green">
+                        <div className="mb-1.5 flex items-baseline justify-between text-xs">
+                          <span className="text-slate-500">Progres Fisik</span>
+                          <span className="font-bold text-slate-900">
                             {progress}%
                           </span>
                         </div>
+                        {/* Hijau = aksen tunggal di kartu: hanya untuk progres. */}
                         <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
                           <div
-                            className="h-full rounded-full bg-gradient-to-r from-brand-blue to-brand-green transition-all duration-300"
+                            className="h-full rounded-full bg-brand-green transition-all duration-300"
                             style={{ width: `${progress}%` }}
                           />
                         </div>
                       </div>
 
-                      <div className="mt-4 grid grid-cols-2 gap-2 border-t border-slate-100 pt-3 text-xs">
-                        <div>
-                          <span className="text-slate-500 block">
-                            Total Anggaran
-                          </span>
-                          <span className="font-semibold text-slate-900 font-mono">
+                      <dl className="mt-4 flex flex-col gap-2 border-t border-slate-100 pt-3 text-xs">
+                        <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+                          <dt className="text-slate-500">Total Anggaran</dt>
+                          <dd className="font-mono font-semibold text-slate-900">
                             {formatRupiah(p.budget_total)}
-                          </span>
+                          </dd>
                         </div>
-                        <div>
-                          <span className="text-slate-500 block">Terpakai</span>
-                          <span className="font-semibold text-slate-900 font-mono">
-                            {formatRupiah(spent)} ({spentPercent}%)
-                          </span>
+                        <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+                          {/* Persentase disorot biru (sekunder); kuning bila realisasi mendahului progres. */}
+                          <dt className="flex items-center gap-1.5 text-slate-500">
+                            Terpakai
+                            <span
+                              className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${
+                                isOverrun
+                                  ? "bg-amber-100 text-amber-800"
+                                  : "bg-brand-blue-light text-brand-blue"
+                              }`}
+                            >
+                              {spentPercent}%
+                            </span>
+                          </dt>
+                          <dd className="font-mono font-semibold text-slate-900">
+                            {formatRupiah(spent)}
+                          </dd>
                         </div>
-                      </div>
+                      </dl>
 
                       {isOverrun && (
                         <div className="mt-4 rounded-md border border-amber-300 bg-amber-50 p-2.5 text-xs text-amber-900">
@@ -413,15 +424,6 @@ export default async function HomePage({
                           progres fisik ({progress}%) melampaui batas wajar.
                         </div>
                       )}
-                    </div>
-
-                    <div className="mt-6 border-t border-slate-100 pt-4">
-                      <Link
-                        href={`/proyek/${p.slug}`}
-                        className="inline-flex w-full items-center justify-center rounded-lg bg-brand-blue py-2.5 text-xs font-semibold text-white transition hover:bg-brand-blue-hover shadow-xs focus:outline-none focus:ring-2 focus:ring-brand-blue focus:ring-offset-2"
-                      >
-                        Lihat Tahapan & Rincian →
-                      </Link>
                     </div>
                   </article>
                 );
@@ -437,7 +439,7 @@ export default async function HomePage({
               {currentPage > 1 && (
                 <Link
                   href={pageHref(currentPage - 1)}
-                  className="rounded border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+                  className="inline-flex min-h-11 items-center rounded-lg border border-slate-300 bg-white px-4 text-xs font-semibold text-slate-700 transition hover:border-brand-blue hover:text-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue"
                 >
                   ← Sebelumnya
                 </Link>
@@ -448,7 +450,7 @@ export default async function HomePage({
               {currentPage < totalPages && (
                 <Link
                   href={pageHref(currentPage + 1)}
-                  className="rounded border border-brand-blue/30 bg-white px-3 py-1.5 text-xs font-semibold text-brand-blue hover:bg-brand-blue-light"
+                  className="inline-flex min-h-11 items-center rounded-lg border border-slate-300 bg-white px-4 text-xs font-semibold text-slate-700 transition hover:border-brand-blue hover:text-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue"
                 >
                   Selanjutnya →
                 </Link>
@@ -464,7 +466,7 @@ export default async function HomePage({
           <p className="mt-2">
             © 2026 SIPANTAU - Portal Transparansi Proyek Pemerintah RI.
           </p>
-          <p className="text-slate-400">
+          <p className="text-slate-500">
             Data dipublikasikan secara terbuka untuk pengawasan publik demi
             akuntabilitas bersama.
           </p>

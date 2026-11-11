@@ -6,12 +6,15 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // /proyek dan /laporan-saya ikut dilewatkan supaya sesi login warga tetap diperbarui.
+  // Halaman publik ikut dilewatkan supaya sesi login (ditampilkan di navbar) tetap diperbarui.
   matcher: [
+    "/",
     "/admin/:path*",
     "/super-admin/:path*",
-    "/masuk",
+    "/admin-login",
     "/proyek/:path*",
+    "/instansi/:path*",
+    "/pantau-sekitar",
     "/laporan-saya",
   ],
 };

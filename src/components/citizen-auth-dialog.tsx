@@ -16,10 +16,13 @@ export function CitizenAuthDialog({
   open,
   onClose,
   onSignedIn,
+  purpose = "report",
 }: {
   readonly open: boolean;
   readonly onClose: () => void;
   readonly onSignedIn: () => void;
+  /** "report": dibuka dari tombol Buat Laporan; "general": dibuka dari navbar. */
+  readonly purpose?: "report" | "general";
 }) {
   const dialogRef = useRef<HTMLDialogElement | null>(null);
   const [mode, setMode] = useState<AuthMode>("masuk");
@@ -96,11 +99,16 @@ export function CitizenAuthDialog({
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 id="citizen-auth-title" className="text-lg font-bold">
-              {isSignIn ? "Masuk untuk membuat laporan" : "Daftar akun warga"}
+              {!isSignIn
+                ? "Daftar akun warga"
+                : purpose === "report"
+                  ? "Masuk untuk membuat laporan"
+                  : "Masuk ke SIPANTAU"}
             </h2>
             <p className="mt-1 text-xs text-slate-600">
-              Laporan dikirim atas nama &quot;Warga&quot;. Email Anda tidak
-              ditampilkan di halaman publik.
+              {purpose === "report"
+                ? "Laporan dikirim atas nama “Warga”. Email Anda tidak ditampilkan di halaman publik."
+                : "Akun warga dipakai untuk mengirim laporan dan memantau tanggapan instansi. Email Anda tidak ditampilkan di halaman publik."}
             </p>
           </div>
           <button
@@ -175,7 +183,8 @@ export function CitizenAuthDialog({
                 className={INPUT_CLASS}
               />
               <p className="mt-1 text-xs text-slate-600">
-                16 digit angka sesuai KTP. NIK disimpan aman untuk validasi pelapor.
+                16 digit angka sesuai KTP. NIK disimpan aman untuk validasi
+                pelapor.
               </p>
             </div>
           )}
@@ -245,9 +254,13 @@ export function CitizenAuthDialog({
           >
             {isPending
               ? "Memproses..."
-              : isSignIn
-                ? "Masuk dan buat laporan"
-                : "Daftar dan buat laporan"}
+              : purpose === "general"
+                ? isSignIn
+                  ? "Masuk"
+                  : "Daftar"
+                : isSignIn
+                  ? "Masuk dan buat laporan"
+                  : "Daftar dan buat laporan"}
           </button>
         </form>
       </div>

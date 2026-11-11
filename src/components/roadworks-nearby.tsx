@@ -105,7 +105,16 @@ function buildPopupContent(project: NearbyRoadwork): HTMLElement {
       true
     );
 
-    statusLine.style.color = status.markerColor;
+    // Teks tetap gelap agar terbaca; warna status cukup lewat titik penanda.
+    const statusDot = document.createElement("span");
+    statusDot.setAttribute("aria-hidden", "true");
+    statusDot.style.display = "inline-block";
+    statusDot.style.width = "8px";
+    statusDot.style.height = "8px";
+    statusDot.style.borderRadius = "9999px";
+    statusDot.style.marginRight = "6px";
+    statusDot.style.backgroundColor = status.markerColor;
+    statusLine.prepend(statusDot);
     statusLine.style.marginTop = "4px";
     container.append(statusLine);
     container.append(

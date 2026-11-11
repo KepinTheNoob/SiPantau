@@ -35,7 +35,7 @@ export function ProjectCompletionSummary({
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
             Proyek Selesai
           </p>
-          <p className="mt-1 text-2xl font-bold text-brand-green">
+          <p className="mt-1 text-2xl font-bold text-slate-900">
             {completed}
             <span className="ml-1 text-sm font-medium text-slate-500">
               dari {total}
@@ -64,7 +64,7 @@ export function ProjectCompletionSummary({
         aria-valuenow={completionPercent}
       >
         <div
-          className="h-full rounded-full bg-gradient-to-r from-brand-blue to-brand-green transition-all"
+          className="h-full rounded-full bg-brand-green transition-all"
           style={{ width: `${completionPercent}%` }}
         />
       </div>

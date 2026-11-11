@@ -181,7 +181,7 @@ export function UserAccountList({
             onClick={() => setRoleFilter("all")}
             className={`rounded-lg px-2.5 py-1 text-xs font-medium transition ${
               roleFilter === "all"
-                ? "bg-slate-900 text-white shadow-xs"
+                ? "bg-brand-blue text-white shadow-xs"
                 : "bg-slate-100 text-slate-600 hover:bg-slate-200"
             }`}
           >
@@ -399,7 +399,7 @@ export function UserAccountList({
 
                       <td className="px-4 py-3 whitespace-nowrap">
                         {acc.isEmailConfirmed ? (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-brand-green border border-emerald-200">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-800 border border-emerald-200">
                             <span className="h-1.5 w-1.5 rounded-full bg-brand-green" />
                             Terverifikasi
                           </span>

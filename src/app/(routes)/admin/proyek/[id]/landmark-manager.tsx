@@ -297,7 +297,7 @@ export function LandmarkManager({
                           Bobot {lm.weight}%
                         </span>
                         {isDone && (
-                          <span className="rounded bg-brand-green-light px-2 py-0.5 text-xs font-semibold text-brand-green border border-brand-green/20">
+                          <span className="rounded bg-brand-green-light px-2 py-0.5 text-xs font-semibold text-emerald-800 border border-brand-green/30">
                             Selesai
                           </span>
                         )}
@@ -373,7 +373,7 @@ export function LandmarkManager({
                       <button
                         type="button"
                         onClick={() => setCompletingLandmarkId(lm.id)}
-                        className="rounded-lg bg-brand-green px-3 py-1 text-xs font-semibold text-white shadow-xs transition hover:bg-brand-green-hover focus:outline-none focus:ring-2 focus:ring-brand-green"
+                        className="rounded-lg bg-brand-blue px-3 py-1 text-xs font-semibold text-white shadow-xs transition hover:bg-brand-blue-hover focus:outline-none focus:ring-2 focus:ring-brand-blue focus:ring-offset-2"
                       >
                         Tandai Selesai
                       </button>
@@ -511,7 +511,7 @@ export function LandmarkManager({
               <button
                 type="submit"
                 disabled={isPending}
-                className="rounded-lg bg-brand-green px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-brand-green-hover disabled:opacity-50"
+                className="rounded-lg bg-brand-blue px-4 py-2 text-xs font-semibold text-white shadow-xs transition hover:bg-brand-blue-hover disabled:opacity-50"
               >
                 {isPending ? "Mengunggah..." : "Unggah & Selesaikan"}
               </button>

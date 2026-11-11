@@ -21,19 +21,17 @@ export default async function PantauSekitarPage() {
   return (
     <div className="flex min-h-screen flex-col justify-between bg-slate-50 text-slate-900">
       <div>
-        <PublicHeader active="pantau-sekitar" containerClassName="max-w-7xl" />
+        <PublicHeader active="pantau-sekitar" />
 
-        <section className="border-b border-slate-200 bg-white py-10 sm:py-12">
+        <section className="bg-brand-blue py-10 text-white sm:py-12">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl">
-              <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+              <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
                 PantauSekitar
               </h1>
-              <p className="mt-3 text-base leading-relaxed text-slate-600 sm:text-lg">
-                Sebelum berangkat, cek jalan mana yang sedang dikerjakan atau
-                ditutup di sekitar Anda, juga proyek pemerintah lain seperti
-                sekolah dan saluran air: sampai kapan, dan sejauh apa
-                progresnya.
+              <p className="mt-3 text-base leading-relaxed text-blue-50 sm:text-lg">
+                Temui proses pengerjaan proyek-proyek pemerintah yang ada di sekitar anda dan ikut berpatisipasi dalam proses
+                pengawasan 
               </p>
             </div>
           </div>

@@ -134,18 +134,6 @@ export default async function AdminProjectDetailPage({
           </section>
         )}
 
-        <section
-          id="laporan-warga"
-          className="scroll-mt-24 rounded-xl border border-slate-200 bg-white p-6 shadow-xs sm:p-8"
-        >
-          <CitizenReportManager
-            projectId={project.id}
-            agencyName={agency.name}
-            reports={citizenReports}
-            canReply={profile.role === "admin" && agency.verified}
-          />
-        </section>
-
         <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs sm:p-8">
           <ProjectGalleryManager
             projectId={project.id}
@@ -167,6 +155,18 @@ export default async function AdminProjectDetailPage({
             budgetTotal={project.budget_total}
             expenses={expenses}
             landmarks={landmarks}
+          />
+        </section>
+
+        <section
+          id="laporan-warga"
+          className="scroll-mt-32 rounded-xl border border-slate-200 bg-white p-6 shadow-xs sm:p-8"
+        >
+          <CitizenReportManager
+            projectId={project.id}
+            agencyName={agency.name}
+            reports={citizenReports}
+            canReply={profile.role === "admin" && agency.verified}
           />
         </section>
       </main>

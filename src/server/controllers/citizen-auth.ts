@@ -1,6 +1,7 @@
 "use server";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { findProfileRole } from "@/server/models/profiles";
 import {
   citizenSignInSchema,
   citizenSignUpSchema,
@@ -30,7 +31,7 @@ export async function citizenSignInAction(
 
   const supabase = await createSupabaseServerClient();
 
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
+  const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
 
   if (error !== null) {
     return {
@@ -40,6 +41,16 @@ export async function citizenSignInAction(
           ? "Email belum dikonfirmasi. Buka tautan konfirmasi di email Anda dulu."
           : "Email atau kata sandi salah.",
     };
+  }
+
+  // Akun pengelola (punya profil admin/super admin) hanya boleh masuk lewat /admin-login.
+  // Pesannya disamakan dengan kredensial salah agar email pengelola tidak bisa ditebak dari sini.
+  const { data: profile } = await findProfileRole(supabase, data.user.id);
+
+  if (profile !== null) {
+    await supabase.auth.signOut();
+
+    return { success: false, message: "Email atau kata sandi salah." };
   }
 
   return { success: true };
@@ -77,6 +88,7 @@ export async function citizenSignUpAction(
 
   if (error !== null) {
     const errorMsg = error.message.toLowerCase();
+
     const isNikRegistered =
       errorMsg.includes("nik sudah terdaftar") ||
       errorMsg.includes("citizen_profiles_nik_key");
