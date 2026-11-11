@@ -47,9 +47,13 @@ function ReportGroup({
         className="mb-4 flex items-center gap-2 text-lg font-bold text-slate-900"
       >
         {title}
-        <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600">
+        <span
+          aria-hidden="true"
+          className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600"
+        >
           {reports.length}
         </span>
+        <span className="sr-only">({reports.length} laporan)</span>
       </h2>
 
       {reports.length === 0 ? (
@@ -119,61 +123,64 @@ export default async function LaporanSayaPage() {
       <div>
         <PublicHeader active={null} />
 
-        <section className="bg-brand-blue py-10 text-white">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <h1 className="text-3xl font-extrabold tracking-tight text-white">
-              PantauLaporan
-            </h1>
-            <p className="mt-2 max-w-2xl text-base text-blue-50">
-              Pantau laporan yang Anda kirim dan tanggapan tertulis dari
-              instansi.
-            </p>
-          </div>
-        </section>
-
-        {/* Lebar halaman sama dengan menu lain; daftar laporan dibatasi agar baris teks tetap nyaman dibaca. */}
-        <main className="mx-auto flex max-w-7xl flex-col gap-10 px-4 py-10 sm:px-6 lg:px-8 [&>*]:max-w-4xl">
-          {user === null ? (
-            <CitizenSignInPrompt />
-          ) : error !== null ? (
-            <p
-              role="alert"
-              className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-800"
-            >
-              Laporan Anda gagal dimuat. Muat ulang halaman untuk mencoba lagi.
-            </p>
-          ) : myReports.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
-              <h2 className="text-base font-semibold text-slate-900">
-                Anda belum mengirim laporan
-              </h2>
-              <p className="mt-1 text-sm text-slate-600">
-                Buka halaman proyek lalu pilih &quot;Buat Laporan Warga&quot;
-                untuk melaporkan kondisi di lapangan.
+        <main id="konten" tabIndex={-1} className="focus:outline-none">
+          <section className="bg-brand-blue py-10 text-white">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+              <h1 className="text-3xl font-extrabold tracking-tight text-white">
+                PantauLaporan
+              </h1>
+              <p className="mt-2 max-w-2xl text-base text-blue-50">
+                Pantau laporan yang Anda kirim dan tanggapan tertulis dari
+                instansi.
               </p>
-              <Link
-                href="/"
-                className="mt-5 inline-flex min-h-11 items-center rounded-lg bg-brand-blue px-5 text-sm font-semibold text-white shadow-xs transition hover:bg-brand-blue-hover"
-              >
-                Lihat daftar proyek
-              </Link>
             </div>
-          ) : (
-            <>
-              <ReportGroup
-                id="laporan-ditanggapi"
-                title="Sudah Ditanggapi"
-                reports={processed}
-                emptyText="Belum ada laporan Anda yang ditanggapi."
-              />
-              <ReportGroup
-                id="laporan-menunggu"
-                title="Menunggu Tanggapan"
-                reports={ongoing}
-                emptyText="Semua laporan Anda sudah ditanggapi instansi."
-              />
-            </>
-          )}
+          </section>
+
+          {/* Lebar halaman sama dengan menu lain; daftar laporan dibatasi agar baris teks tetap nyaman dibaca. */}
+          <div className="mx-auto flex max-w-7xl flex-col gap-10 px-4 py-10 sm:px-6 lg:px-8 [&>*]:max-w-4xl">
+            {user === null ? (
+              <CitizenSignInPrompt />
+            ) : error !== null ? (
+              <p
+                role="alert"
+                className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-800"
+              >
+                Laporan Anda gagal dimuat. Muat ulang halaman untuk mencoba
+                lagi.
+              </p>
+            ) : myReports.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-slate-300 bg-white p-10 text-center">
+                <h2 className="text-base font-semibold text-slate-900">
+                  Anda belum mengirim laporan
+                </h2>
+                <p className="mt-1 text-sm text-slate-600">
+                  Buka halaman proyek lalu pilih &quot;Buat Laporan Warga&quot;
+                  untuk melaporkan kondisi di lapangan.
+                </p>
+                <Link
+                  href="/"
+                  className="mt-5 inline-flex min-h-11 items-center rounded-lg bg-brand-blue px-5 text-sm font-semibold text-white shadow-xs transition hover:bg-brand-blue-hover"
+                >
+                  Lihat daftar proyek
+                </Link>
+              </div>
+            ) : (
+              <>
+                <ReportGroup
+                  id="laporan-ditanggapi"
+                  title="Sudah Ditanggapi"
+                  reports={processed}
+                  emptyText="Belum ada laporan Anda yang ditanggapi."
+                />
+                <ReportGroup
+                  id="laporan-menunggu"
+                  title="Menunggu Tanggapan"
+                  reports={ongoing}
+                  emptyText="Semua laporan Anda sudah ditanggapi instansi."
+                />
+              </>
+            )}
+          </div>
         </main>
       </div>
 

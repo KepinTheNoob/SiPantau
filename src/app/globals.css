@@ -17,3 +17,21 @@ select:not([multiple]) {
   background-size: 1rem;
   padding-right: 2.5rem;
 }
+
+/* Aksesibilitas (WCAG 2.4.7): indikator fokus cadangan untuk elemen interaktif yang belum punya gaya fokus sendiri. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-brand-blue-hover);
+  outline-offset: 2px;
+}
+
+/* Aksesibilitas (WCAG 2.3.3): hormati pengaturan "kurangi gerakan" di perangkat pengguna. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

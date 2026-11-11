@@ -81,9 +81,9 @@ function NarrativePanel({
         >
           {icon}
         </span>
-        <h3 id={headingId} className="text-base font-bold text-slate-900">
+        <h2 id={headingId} className="text-base font-bold text-slate-900">
           {title}
-        </h3>
+        </h2>
       </div>
 
       {points.length === 0 ? (

@@ -93,6 +93,8 @@ export function ProjectMap({
     <div className="overflow-hidden rounded-xl border border-slate-200 shadow-xs">
       <div
         ref={mapContainerRef}
+        role="region"
+        aria-label={`Peta lokasi ${title}, ${locationName}`}
         className="h-72 w-full z-0"
         style={{ minHeight: "288px" }}
       />
