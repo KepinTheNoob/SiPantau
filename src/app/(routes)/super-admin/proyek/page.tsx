@@ -161,7 +161,7 @@ export default async function SuperAdminProjectsPage({
   return (
     <main className="mx-auto flex min-h-screen max-w-7xl flex-col gap-6 bg-slate-50 px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
       <div>
-        <h2 className="text-xl font-bold tracking-tight">Daftar Proyek</h2>
+        <h1 className="text-xl font-bold tracking-tight">Daftar Proyek</h1>
         <p className="mt-1 text-sm text-slate-600">
           Seluruh proyek dari berbagai instansi beserta pembuat dan wilayahnya.
         </p>
@@ -170,6 +170,7 @@ export default async function SuperAdminProjectsPage({
       <form method="GET" className="flex flex-wrap items-center gap-2">
         <select
           name="createdBy"
+          aria-label="Filter pembuat proyek"
           defaultValue={createdBy ?? ""}
           className="rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-xs"
         >
@@ -184,6 +185,7 @@ export default async function SuperAdminProjectsPage({
 
         <select
           name="region"
+          aria-label="Filter wilayah"
           defaultValue={region ?? ""}
           className="rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-xs"
         >
@@ -217,7 +219,12 @@ export default async function SuperAdminProjectsPage({
           Tidak ada proyek yang cocok dengan filter.
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-xs">
+        <div
+          role="region"
+          aria-label="Tabel daftar proyek"
+          tabIndex={0}
+          className="focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-xs"
+        >
           <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
             <thead className="bg-slate-50 text-xs font-semibold uppercase text-slate-600">
               <tr>

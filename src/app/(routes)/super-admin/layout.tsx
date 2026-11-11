@@ -12,7 +12,9 @@ export default async function SuperAdminLayout({
   return (
     <>
       <PanelNavbar role="super_admin" agencyName={null} />
-      {children}
+      <div id="konten" tabIndex={-1} className="focus:outline-none">
+        {children}
+      </div>
     </>
   );
 }

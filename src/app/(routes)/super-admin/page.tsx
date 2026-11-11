@@ -97,15 +97,15 @@ export default async function SuperAdminDashboardPage() {
   return (
     <div className="min-h-screen bg-slate-50 pb-16 text-slate-900">
       <main className="mx-auto flex max-w-7xl flex-col gap-10 px-4 py-8 sm:px-6 lg:px-8">
-        <h2 className="text-xl font-bold tracking-tight text-slate-900">
+        <h1 className="text-xl font-bold tracking-tight text-slate-900">
           Dashboard Super Admin
-        </h2>
+        </h1>
 
         <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
-            <h3 className="text-xs font-semibold uppercase text-slate-500">
+            <h2 className="text-xs font-semibold uppercase text-slate-500">
               Profil Instansi
-            </h3>
+            </h2>
             <p className="mt-2 text-lg font-bold text-slate-900">
               {agency?.name ?? "Tidak terafiliasi dengan instansi"}
             </p>
@@ -115,9 +115,9 @@ export default async function SuperAdminDashboardPage() {
           </div>
 
           <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
-            <h3 className="text-xs font-semibold uppercase text-slate-500">
+            <h2 className="text-xs font-semibold uppercase text-slate-500">
               Informasi Akun
-            </h3>
+            </h2>
             <p className="mt-2 text-sm font-medium text-slate-900">
               {user.email}
             </p>
@@ -130,9 +130,9 @@ export default async function SuperAdminDashboardPage() {
           </div>
 
           <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs">
-            <h3 className="text-xs font-semibold uppercase text-slate-500">
+            <h2 className="text-xs font-semibold uppercase text-slate-500">
               Cakupan Wilayah
-            </h3>
+            </h2>
             <p className="mt-2 text-lg font-bold text-slate-900">
               {agency?.region ?? "-"}
             </p>

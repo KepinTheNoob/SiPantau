@@ -34,7 +34,9 @@ export default async function AdminLayout({
         role={profile.role === "super_admin" ? "super_admin" : "admin"}
         agencyName={agency?.name ?? null}
       />
-      {children}
+      <div id="konten" tabIndex={-1} className="focus:outline-none">
+        {children}
+      </div>
       <DelayReportPrompt
         projects={pendingDelays}
         categories={categories ?? []}

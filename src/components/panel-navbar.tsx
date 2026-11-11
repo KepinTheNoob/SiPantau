@@ -34,6 +34,13 @@ export function PanelNavbar({
 
   return (
     <header className="sticky top-0 z-20 shadow-xs">
+      {/* Tautan lewati (WCAG 2.4.1): muncul saat difokus dengan keyboard. */}
+      <a
+        href="#konten"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-brand-blue focus:px-4 focus:py-2.5 focus:text-sm focus:font-semibold focus:text-white focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-white"
+      >
+        Lewati ke konten utama
+      </a>
       <div className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
           <div className="flex min-w-0 items-center gap-4">

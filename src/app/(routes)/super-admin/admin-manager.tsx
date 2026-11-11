@@ -97,7 +97,12 @@ export function AdminManager({
         </div>
       )}
 
-      <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-xs">
+      <div
+        role="region"
+        aria-label="Tabel admin instansi"
+        tabIndex={0}
+        className="focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-xs"
+      >
         <table className="min-w-full divide-y divide-slate-200 text-left text-xs">
           <thead className="bg-slate-50 font-semibold text-slate-700">
             <tr>

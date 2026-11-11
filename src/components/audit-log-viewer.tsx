@@ -54,7 +54,12 @@ export function AuditLogViewer({
 
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs">
-      <div className="overflow-x-auto">
+      <div
+        role="region"
+        aria-label="Tabel riwayat mutasi"
+        tabIndex={0}
+        className="focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue overflow-x-auto"
+      >
         <table className="min-w-full divide-y divide-slate-200 text-left text-xs">
           <thead className="bg-slate-50 font-semibold text-slate-700">
             <tr>
@@ -154,7 +159,7 @@ export function AuditLogViewer({
                   Sebelumnya
                 </Link>
               ) : (
-                <span className="rounded border border-slate-200 px-3 py-1.5 text-xs text-slate-400">
+                <span className="rounded border border-slate-200 px-3 py-1.5 text-xs text-slate-500">
                   Sebelumnya
                 </span>
               )}
@@ -171,7 +176,7 @@ export function AuditLogViewer({
                   Berikutnya
                 </Link>
               ) : (
-                <span className="rounded border border-slate-200 px-3 py-1.5 text-xs text-slate-400">
+                <span className="rounded border border-slate-200 px-3 py-1.5 text-xs text-slate-500">
                   Berikutnya
                 </span>
               )}

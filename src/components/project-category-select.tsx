@@ -173,7 +173,7 @@ export function ProjectCategorySelect({
         onClick={() => setIsOpen((open) => !open)}
         className={`${className} flex items-center justify-between gap-3 text-left transition focus:border-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue/20`}
       >
-        <span className={selectedLabel ? "text-slate-900" : "text-slate-400"}>
+        <span className={selectedLabel ? "text-slate-900" : "text-slate-500"}>
           {selectedLabel ?? "Pilih Kategori"}
         </span>
         <svg
@@ -225,7 +225,7 @@ export function ProjectCategorySelect({
                     onClick={() => chooseOption(option.value)}
                     className={`flex w-full items-start justify-between gap-3 rounded-lg px-3 py-2.5 text-left transition ${
                       isSelected
-                        ? "bg-brand-blue-light text-brand-blue"
+                        ? "bg-brand-blue-light text-brand-blue-hover"
                         : "text-slate-800 hover:bg-slate-50"
                     }`}
                   >
