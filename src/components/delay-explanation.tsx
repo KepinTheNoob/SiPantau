@@ -35,17 +35,17 @@ function ReportBody({ report }: { readonly report: DelayReportView }) {
         </ul>
       )}
       <div>
-        <h4 className="text-xs font-semibold text-slate-600">
+        <h3 className="text-xs font-semibold text-slate-600">
           Alasan keterlambatan
-        </h4>
+        </h3>
         <p className="mt-1 whitespace-pre-line leading-relaxed">
           {report.reasonDetail}
         </p>
       </div>
       <div>
-        <h4 className="text-xs font-semibold text-slate-600">
+        <h3 className="text-xs font-semibold text-slate-600">
           Rencana mengejar keterlambatan
-        </h4>
+        </h3>
         <p className="mt-1 whitespace-pre-line leading-relaxed">
           {report.recoveryPlan}
         </p>

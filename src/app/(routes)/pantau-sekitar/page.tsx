@@ -23,28 +23,30 @@ export default async function PantauSekitarPage() {
       <div>
         <PublicHeader active="pantau-sekitar" />
 
-        <section className="bg-brand-blue py-10 text-white sm:py-12">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="max-w-3xl">
-              <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-                PantauSekitar
-              </h1>
-              <p className="mt-3 text-base leading-relaxed text-blue-50 sm:text-lg">
-                Temui proses pengerjaan proyek-proyek pemerintah yang ada di sekitar anda dan ikut berpatisipasi dalam proses
-                pengawasan 
-              </p>
+        <main id="konten" tabIndex={-1} className="focus:outline-none">
+          <section className="bg-brand-blue py-10 text-white sm:py-12">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+              <div className="max-w-3xl">
+                <h1 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+                  PantauSekitar
+                </h1>
+                <p className="mt-3 text-base leading-relaxed text-blue-50 sm:text-lg">
+                  Temui proses pengerjaan proyek-proyek pemerintah yang ada di
+                  sekitar anda dan ikut berpatisipasi dalam proses pengawasan
+                </p>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-          <RoadworksNearby
-            projects={roadworks.projects}
-            categoryGroups={projectCategoryFilterGroups(
-              roadworks.projects.map((project) => project.category)
-            )}
-            loadFailed={roadworks.loadFailed}
-          />
+          <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+            <RoadworksNearby
+              projects={roadworks.projects}
+              categoryGroups={projectCategoryFilterGroups(
+                roadworks.projects.map((project) => project.category)
+              )}
+              loadFailed={roadworks.loadFailed}
+            />
+          </div>
         </main>
       </div>
 

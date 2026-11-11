@@ -172,23 +172,39 @@ export default async function ProjectDetailPage({
           <PublicHeader active={null} />
         )}
 
-        <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 flex flex-col gap-8">
-          <div className="flex items-center gap-2 text-sm text-slate-500">
-            <Link href="/" className="hover:text-brand-blue hover:underline">
-              Beranda
-            </Link>
-            <span>/</span>
-            <Link
-              href={`/instansi/${agency.slug}`}
-              className="hover:text-brand-blue hover:underline"
-            >
-              {agency.name}
-            </Link>
-            <span>/</span>
-            <span className="text-slate-800 font-medium truncate max-w-xs">
-              {project.title}
-            </span>
-          </div>
+        <main
+          id="konten"
+          tabIndex={-1}
+          className="mx-auto max-w-5xl px-4 py-8 sm:px-6 flex flex-col gap-8 focus:outline-none"
+        >
+          <nav aria-label="Breadcrumb">
+            <ol className="flex flex-wrap items-center gap-2 text-sm text-slate-600">
+              <li>
+                <Link
+                  href="/"
+                  className="hover:text-brand-blue hover:underline"
+                >
+                  Beranda
+                </Link>
+              </li>
+              <li aria-hidden="true">/</li>
+              <li>
+                <Link
+                  href={`/instansi/${agency.slug}`}
+                  className="hover:text-brand-blue hover:underline"
+                >
+                  {agency.name}
+                </Link>
+              </li>
+              <li aria-hidden="true">/</li>
+              <li
+                aria-current="page"
+                className="max-w-xs truncate font-medium text-slate-800"
+              >
+                {project.title}
+              </li>
+            </ol>
+          </nav>
 
           <article className="rounded-xl border border-slate-200 bg-white p-6 shadow-xs sm:p-8">
             {coverImage !== null && (
@@ -200,7 +216,7 @@ export default async function ProjectDetailPage({
             <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
               <Link
                 href={`/instansi/${agency.slug}`}
-                className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 transition hover:bg-brand-blue-light hover:text-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue"
+                className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700 transition hover:bg-brand-blue-light hover:text-brand-blue-hover focus:outline-none focus:ring-2 focus:ring-brand-blue"
               >
                 {agency.name} ({agency.region})
               </Link>
@@ -321,7 +337,7 @@ export default async function ProjectDetailPage({
               </h2>
               <dl className="mt-4 divide-y divide-slate-100 border-t border-slate-100">
                 <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 py-3">
-                  <dt className="text-xs text-slate-500">Total Pagu</dt>
+                  <dt className="text-xs text-slate-500">Total</dt>
                   <dd className="text-sm font-bold text-slate-900 font-mono">
                     {formatRupiah(budgetTotal)}
                   </dd>
@@ -333,7 +349,7 @@ export default async function ProjectDetailPage({
                       className={`rounded-full px-2 py-0.5 text-xs font-bold ${
                         isOverrun
                           ? "bg-amber-100 text-amber-800"
-                          : "bg-brand-blue-light text-brand-blue"
+                          : "bg-brand-blue-light text-brand-blue-hover"
                       }`}
                     >
                       {spentPercent}%
@@ -411,6 +427,10 @@ export default async function ProjectDetailPage({
                               className="inline-flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold shadow-xs border border-slate-300 bg-white text-slate-700 transition hover:border-brand-blue hover:text-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue"
                             >
                               Bukti Dokumentasi ↗
+                              <span className="sr-only">
+                                {" "}
+                                (membuka tab baru)
+                              </span>
                             </a>
                           </div>
                         )}

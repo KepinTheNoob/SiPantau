@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useId, useRef, useState, useTransition } from "react";
 import {
   citizenSignInAction,
   citizenSignUpAction,
@@ -25,6 +25,8 @@ export function CitizenAuthDialog({
   readonly purpose?: "report" | "general";
 }) {
   const dialogRef = useRef<HTMLDialogElement | null>(null);
+  // Dialog bisa muncul dua kali di satu halaman (navbar + laporan), jadi id judul harus unik.
+  const titleId = useId();
   const [mode, setMode] = useState<AuthMode>("masuk");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [infoMessage, setInfoMessage] = useState<string | null>(null);
@@ -85,7 +87,7 @@ export function CitizenAuthDialog({
   return (
     <dialog
       ref={dialogRef}
-      aria-labelledby="citizen-auth-title"
+      aria-labelledby={titleId}
       onClose={onClose}
       onClick={(event) => {
         // Klik di area gelap di luar kotak modal menutup modal.
@@ -98,7 +100,7 @@ export function CitizenAuthDialog({
       <div className="p-6 sm:p-7">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 id="citizen-auth-title" className="text-lg font-bold">
+            <h2 id={titleId} className="text-lg font-bold">
               {!isSignIn
                 ? "Daftar akun warga"
                 : purpose === "report"

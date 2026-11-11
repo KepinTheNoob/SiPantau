@@ -70,16 +70,29 @@ export default async function AgencyDetailPage({
       <div>
         <PublicHeader active={null} />
 
-        <main className="mx-auto max-w-5xl px-4 py-8 sm:px-6 flex flex-col gap-8">
-          <div className="flex items-center gap-2 text-sm text-slate-500">
-            <Link href="/" className="hover:text-brand-blue hover:underline">
-              Beranda
-            </Link>
-            <span>/</span>
-            <span className="text-slate-800 font-medium">Instansi</span>
-            <span>/</span>
-            <span className="text-slate-800 font-semibold">{agency.name}</span>
-          </div>
+        <main
+          id="konten"
+          tabIndex={-1}
+          className="mx-auto max-w-5xl px-4 py-8 sm:px-6 flex flex-col gap-8 focus:outline-none"
+        >
+          <nav aria-label="Breadcrumb">
+            <ol className="flex flex-wrap items-center gap-2 text-sm text-slate-600">
+              <li>
+                <Link
+                  href="/"
+                  className="hover:text-brand-blue hover:underline"
+                >
+                  Beranda
+                </Link>
+              </li>
+              <li aria-hidden="true">/</li>
+              <li className="font-medium text-slate-800">Instansi</li>
+              <li aria-hidden="true">/</li>
+              <li aria-current="page" className="font-semibold text-slate-800">
+                {agency.name}
+              </li>
+            </ol>
+          </nav>
 
           <section className="rounded-xl bg-brand-blue p-6 text-white shadow-xs sm:p-8">
             <div className="flex flex-wrap items-center justify-between gap-4">

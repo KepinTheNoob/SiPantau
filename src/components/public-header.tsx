@@ -43,6 +43,13 @@ export async function PublicHeader({
 
   return (
     <header className="sticky top-0 z-10 border-b border-slate-200 bg-white shadow-xs">
+      {/* Tautan lewati (WCAG 2.4.1): muncul saat difokus dengan keyboard. */}
+      <a
+        href="#konten"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-2 focus:z-50 focus:rounded-lg focus:bg-brand-blue focus:px-4 focus:py-2.5 focus:text-sm focus:font-semibold focus:text-white focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-white"
+      >
+        Lewati ke konten utama
+      </a>
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-2 sm:px-6 lg:px-8">
         <Link
           href="/"
@@ -74,7 +81,7 @@ export async function PublicHeader({
                 aria-current={isActive ? "page" : undefined}
                 className={`inline-flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-lg px-2 text-[13px] font-semibold sm:px-3 sm:text-sm transition focus:outline-none focus:ring-2 focus:ring-brand-blue ${
                   isActive
-                    ? "bg-brand-blue-light text-brand-blue"
+                    ? "bg-brand-blue-light text-brand-blue-hover"
                     : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
                 }`}
               >

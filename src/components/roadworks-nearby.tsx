@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import type L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { distanceKm, formatDistance, type Coordinates } from "@/lib/geo";
@@ -435,8 +436,9 @@ export function RoadworksNearby({
       <div className="relative z-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs">
         <div
           ref={mapContainerRef}
+          role="region"
           className="h-[65vh] max-h-[720px] min-h-80 w-full"
-          aria-label="Peta lokasi proyek jalan"
+          aria-label="Peta lokasi proyek. Daftar yang sama tersedia di bawah peta."
         />
         {mapState !== "ready" && (
           <div className="absolute inset-0 z-[500] flex items-center justify-center bg-slate-50 px-6 text-center text-sm text-slate-600">
@@ -483,6 +485,47 @@ export function RoadworksNearby({
           Lokasi Anda
         </li>
       </ul>
+
+      {/* Alternatif teks untuk peta (WCAG 1.1.1): isi peta yang sama dalam bentuk daftar, tertutup secara bawaan. */}
+      {visibleProjects.length > 0 && (
+        <details className="group mt-4 rounded-xl border border-slate-200 bg-white">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-xl px-4 text-sm font-semibold text-slate-800 hover:bg-slate-50">
+            Lihat sebagai daftar ({visibleProjects.length} proyek)
+            <span
+              aria-hidden="true"
+              className="text-slate-500 transition group-open:rotate-180"
+            >
+              ▾
+            </span>
+          </summary>
+          <ul className="divide-y divide-slate-100 border-t border-slate-100">
+            {[...visibleProjects]
+              .sort(
+                (first, second) =>
+                  (first.distanceKm ?? Number.POSITIVE_INFINITY) -
+                  (second.distanceKm ?? Number.POSITIVE_INFINITY)
+              )
+              .map((project) => (
+                <li key={project.id} className="px-4 py-3 text-sm">
+                  <Link
+                    href={`/proyek/${project.slug}`}
+                    className="font-semibold text-slate-900 hover:text-brand-blue hover:underline"
+                  >
+                    {project.title}
+                  </Link>
+                  <p className="mt-0.5 text-xs text-slate-600">
+                    {project.category} ·{" "}
+                    {PROJECT_STATUS_DISPLAY[project.status].label} · target{" "}
+                    {formatTargetDate(project.targetEndDate)} (
+                    {deadlineCountdown(project)})
+                    {project.distanceKm !== null &&
+                      ` · ${formatDistance(project.distanceKm)} dari lokasi Anda`}
+                  </p>
+                </li>
+              ))}
+          </ul>
+        </details>
+      )}
     </section>
   );
 }

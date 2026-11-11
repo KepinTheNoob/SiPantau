@@ -17,6 +17,7 @@ export function UserMenu({
   const router = useRouter();
   const menuId = useId();
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
   const [open, setOpen] = useState(false);
   const [isSigningOut, startSignOut] = useTransition();
 
@@ -40,6 +41,7 @@ export function UserMenu({
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         setOpen(false);
+        buttonRef.current?.focus();
       }
     }
 
@@ -66,8 +68,8 @@ export function UserMenu({
   return (
     <div ref={containerRef} className="relative sm:order-last">
       <button
+        ref={buttonRef}
         type="button"
-        aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={menuId}
         onClick={() => setOpen((value) => !value)}
@@ -80,6 +82,7 @@ export function UserMenu({
           {initial}
         </span>
         <span className="truncate">{displayName}</span>
+        <span className="sr-only">, menu akun</span>
         <svg
           aria-hidden="true"
           viewBox="0 0 20 20"
@@ -99,13 +102,11 @@ export function UserMenu({
       {open && (
         <div
           id={menuId}
-          role="menu"
           className="absolute right-0 z-20 mt-2 w-60 rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg"
         >
           <p className="truncate px-3 py-2 text-xs text-slate-500">{email}</p>
           {panelHref !== null && (
             <Link
-              role="menuitem"
               href={panelHref}
               onClick={() => setOpen(false)}
               className={itemClass}
@@ -115,7 +116,6 @@ export function UserMenu({
           )}
           {panelHref === null && (
             <Link
-              role="menuitem"
               href="/laporan-saya"
               onClick={() => setOpen(false)}
               className={itemClass}
@@ -125,7 +125,6 @@ export function UserMenu({
           )}
           <button
             type="button"
-            role="menuitem"
             onClick={handleSignOut}
             disabled={isSigningOut}
             className={`${itemClass} text-red-700 hover:bg-red-50 hover:text-red-800 disabled:cursor-not-allowed disabled:opacity-60`}

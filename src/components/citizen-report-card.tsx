@@ -89,6 +89,7 @@ export function CitizenReportCard({
           className="relative z-10 mt-3 inline-flex min-h-11 items-center gap-1.5 text-xs font-semibold text-brand-blue hover:underline"
         >
           Lihat foto lapangan ↗
+          <span className="sr-only"> (membuka tab baru)</span>
         </a>
       )}
 
